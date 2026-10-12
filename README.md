@@ -139,7 +139,7 @@ configurable, and the 4-paper cap stays soft.
 ```
 ems/            the system (one file per SRS module; see docs/DESIGN.md)
 tools/          dataset generator, mid-term importer, manual-vs-EMS comparison
-tests/          pytest suite (21 tests, ~3 s): python -m pytest
+tests/          pytest suite (21 tests, ~15 s): python -m pytest
 data/           datasets: dummy, dummy_realistic, midterm_2026  (data/raw is git-ignored)
 out/            generated plans and printable reports for each dataset
 docs/           Phase 0 plan, SRS, MoSCoW, design-lab diagrams, DESIGN.md, case study

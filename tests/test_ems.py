@@ -201,20 +201,29 @@ def test_schedule_infeasibility_names_the_rules(tmp_path):
     assert "pinned-override" in text and "gap-rule" in text
 
 
-def test_teacher_pin_into_own_class_is_rejected(solved, tmp_path):
-    data, out = solved
-    codes = {r["course_code"]: r["paper_id"] for r in csv.DictReader((data / "course_codes.csv").open())}
-    taught = {(codes[r["course_code"]], r["section_id"]): r["teacher_id"]
-              for r in csv.DictReader((data / "teaching.csv").open())}
-    # a seat whose section was taught that paper by a known teacher
-    seat, t = next((r, taught[(r["paper_id"], r["section_id"])]) for r in csv.DictReader((out / "seating.csv").open())
-                   if (r["paper_id"], r["section_id"]) in taught)
-    pins = tmp_path / "p.csv"
-    pins.write_text(f"kind,paper_id,teacher_id,room_id,date,session\nteacher_room,,{t},{seat['room_id']},"
-                    f"{seat['date']},{seat['session']}\n")
-    res = run_pipeline(data, out, pins_file=pins, log=lambda *_: None)
-    assert res.state == P.INF_DUTIES
-    assert "taught" in (out / "diagnosis.txt").read_text()
+def test_teacher_pin_into_own_class_is_rejected(tiny):
+    # Run M1-M5 once, then pin a teacher into a room holding a section they taught for the paper there.
+    from ems.duties import assign_duties
+    from ems.feasibility import slot_capacity
+    from ems.geometry import layouts_for
+    from ems.model import Pin
+    from ems.scheduling import solve_schedule
+    from ems.seating import allocate_seating
+
+    ds = load_dataset(tiny)
+    pm = build_paper_map(ds)
+    cg = build_conflicts(ds, pm)
+    cap = slot_capacity(ds, layouts_for(ds.rooms, ds.config["seating"]))
+    seating = allocate_seating(ds, pm, solve_schedule(ds, pm, cg, cap), cap)
+    taught = {(p, sec): t for t, p, sec in cg.taught}
+    a = next(a for a in seating.seats if (a.paper_id, a.section_id) in taught)
+    t = taught[(a.paper_id, a.section_id)]
+    assert assign_duties(ds, pm, cg, seating).ok
+    ds.pins.append(Pin("teacher_room", teacher_id=t, room_id=a.room_id,
+                       date=a.slot.date.isoformat(), session=a.slot.session))
+    res = assign_duties(ds, pm, cg, seating)
+    assert not res.ok
+    assert "taught" in res.diagnosis.text() and t in res.diagnosis.text()
 
 
 # ---------------------------------------------------------------- state machine

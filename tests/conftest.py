@@ -56,7 +56,7 @@ def write_dataset(root: Path, *, config_extra=None, rooms=None, teachers=None, e
       [("R1", "NB", 2, 4, 2, 0), ("R2", "NB", 2, 4, 2, 1), ("R3", "NB", 3, 4, 1, 2)])
     cfg = {"name": "tiny", "calendar": {"start": "2026-03-02", "end": "2026-03-13"},
            "scheduling": {"min_day_gap": 2, "time_limit_s": 10},
-           "duties": {"time_limit_s": 10}, "solver": {"workers": 4, "seed": 1}}
+           "duties": {"time_limit_s": 10}, "solver": {"workers": 1, "seed": 1}}
     for k, v in (config_extra or {}).items():
         cfg.setdefault(k, {}).update(v) if isinstance(v, dict) else cfg.__setitem__(k, v)
     (root / "config.json").write_text(json.dumps(cfg))
