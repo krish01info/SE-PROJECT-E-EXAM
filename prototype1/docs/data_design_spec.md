@@ -142,4 +142,13 @@ Answer each question with a reason in §8.
 
 | Date | Question | Decision | Reason |
 |---|---|---|---|
-| | | | |
+| 2026-10-13 | Q1 Programs, cohorts | Keep the Phase 0 cohorts: BT2 and BT3 (9 sections each), BB2 and BB3 (3 sections each). 1,200 students. | It already has different programs and different years, and BTech dominates. |
+| 2026-10-13 | Q1 Section size | Every section has 50 students. | Keep it simple for prototype1. |
+| 2026-10-13 | Q2 Papers per cohort | Each student writes all their cohort's cores plus one elective. Cores: BT2 6, BT3 6, BB2 3, BB3 4. Electives: BT2 250/110/90, BT3 240/115/95, BB2 55/55/40, BB3 50/50/50. | Uneven sizes would be more realistic, but for prototype1 BB3 stays at 50 each. BTech's electives are already uneven, so room packing is still tested. |
+| 2026-10-13 | Q3 Shared paper | Discrete Maths is shared by BT2 and BT3 under different codes. In BT2 it stays an elective (250). In BT3 it replaces one core, so BT3 still writes 7 papers. Which BT3 core it replaces is chosen in step 2. | Discrete Maths is a real paper. Core in one year and elective in the other keeps the shared paper manageable (250 + 450 = 700 students, not 900). Replacing a core keeps BT3 at 7 papers, so the window stays the same. |
+| 2026-10-13 | Q4 Rooms | 18 S rooms and 18 M rooms: 594 seats with one paper per room, 1,080 mixed. | We don't have unlimited rooms. The busiest slot only just fits. |
+| 2026-10-13 | Q5 Teachers | About 85 teachers, 10 of them PhD scholars. The rest are 50% ASST, 30% ASSOC, 20% PROF. | 36 rooms × 2 invigilators = 72 teachers in the busiest slot, so we need more than 72. The rank split follows the spec's realistic-teacher-body default (§4). |
+| 2026-10-13 | Q5 Sections per teacher | Not decided yet. | Still open. To be decided before step 2. |
+| 2026-10-13 | Q6 Exam window | Mon 2 Nov to Wed 18 Nov 2026, Mon–Fri, holiday Wed 11 Nov. | The window comes from the number of papers. 7 papers with a clear day between each need 2–16 Nov. A weekday holiday pushes that to 18 Nov. |
+| 2026-10-13 | Q7 What makes `main` hard | Fitting every student's exams into the short window under the gap rule. | The window is set at the minimum. |
+| 2026-10-13 | Q7 What makes a plan good | Fewer mixed rooms. | With mixed papers, invigilators have to sort the answer copies by paper before sending them to each teacher. |
