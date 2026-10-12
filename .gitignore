@@ -1,0 +1,11 @@
+# Raw institutional data and the private name map never go to a public repo
+data/raw/
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+venv/
+*.egg-info/
+build/
+dist/
+.DS_Store

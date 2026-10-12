@@ -1,0 +1,32 @@
+paper_id,title,course_codes,date,weekday,session,students,side
+ADS,Advanced Data Science,CSE3011,2026-03-02,Mon,Morning,240,A
+BDA,Big Data Analysis,CSE3012,2026-03-02,Mon,Morning,105,B
+CYS,Cyber Security,CSE3013,2026-03-02,Mon,Morning,105,A
+DT,Design Thinking,DES2001 DES2001B,2026-03-02,Mon,Morning,80,B
+STRAT,Strategic Management,BBA3002,2026-03-02,Mon,Morning,150,B
+BSTAT,Business Statistics,BBA2002,2026-03-04,Wed,Morning,150,B
+HAPPY,Happiness,HUM3001,2026-03-04,Wed,Morning,150,A
+CODE,Coding Skills,CSE3005,2026-03-04,Wed,Evening,450,B
+LA,Linear Algebra,MTH2001,2026-03-04,Wed,Evening,450,A
+QM,Quantum Mechanics,PHY2002,2026-03-06,Fri,Morning,100,A
+SPHY,Semiconductor Physics,PHY2001,2026-03-06,Fri,Morning,100,B
+BCOM,Business Communication,BBA2003,2026-03-06,Fri,Evening,150,A
+BITM,Bringing Ideas to Market,BBA3011,2026-03-06,Fri,Evening,50,A
+DM,Discrete Mathematics,MTH2002 MTH3011,2026-03-06,Fri,Evening,280,B
+EIB,Ethics & Integrity in Business,BBA3012,2026-03-06,Fri,Evening,50,A
+OB,Organizational Behaviour,BBA3013,2026-03-06,Fri,Evening,50,A
+DSA,Data Structures & Algorithms,CSE2001,2026-03-10,Tue,Evening,450,A
+ML,Machine Learning,CSE3001,2026-03-10,Tue,Evening,450,B
+OOPS,Object Oriented Programming,CSE2002,2026-03-12,Thu,Evening,450,B
+SE,Software Engineering,CSE3003,2026-03-12,Thu,Evening,450,A
+BLAW,Business Law,BBA3001,2026-03-16,Mon,Morning,150,B
+FIN,Finance,BBA2011,2026-03-16,Mon,Morning,55,A
+MKT,Marketing,BBA2012,2026-03-16,Mon,Morning,55,A
+DLD,Digital Logic Design,ECE2001,2026-03-16,Mon,Evening,450,B
+IOT,Internet of Things,ECE3001,2026-03-16,Mon,Evening,450,A
+COA,Computer Architecture & Organization,CSE3004,2026-03-18,Wed,Evening,450,B
+DAP,Data Analysis in Python,CSE2003,2026-03-18,Wed,Evening,450,A
+MACRO,Macroeconomics,BBA2001,2026-03-19,Thu,Morning,150,B
+OPM,Operations Management,BBA3003,2026-03-19,Thu,Morning,150,A
+AI,Artificial Intelligence,CSE3002,2026-03-20,Fri,Evening,450,B
+OS,Operating Systems,CSE2004,2026-03-20,Fri,Evening,450,A

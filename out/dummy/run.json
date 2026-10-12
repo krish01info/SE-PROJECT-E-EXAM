@@ -1,0 +1,74 @@
+{
+  "dataset": "data/dummy",
+  "pins_file": null,
+  "generated_at": "2026-10-12T14:37:46",
+  "config": {
+    "name": "Dummy dataset \u2014 Phase 0 \u00a79",
+    "calendar": {
+      "start": "2026-03-02",
+      "end": "2026-03-27",
+      "weekdays": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "holidays": [],
+      "sessions": [
+        "Morning",
+        "Evening"
+      ]
+    },
+    "scheduling": {
+      "min_day_gap": 2,
+      "time_limit_s": 60
+    },
+    "seating": {
+      "front_back_adjacent": true,
+      "across_aisle_adjacent": true,
+      "max_papers_per_room_soft": 4
+    },
+    "duties": {
+      "invigilators_per_room": 2,
+      "rank_weights": {
+        "professor": 0.7,
+        "associate": 0.85,
+        "assistant": 1.0,
+        "phd": 0.5,
+        "staff": 0.5
+      },
+      "require_own_paper_duty": true,
+      "max_duties_per_day_soft": 1,
+      "time_limit_s": 120
+    },
+    "validation": {
+      "student_id_pattern": "^[A-Z0-9][A-Z0-9_-]*$",
+      "teacher_id_pattern": "^[A-Z0-9][A-Z0-9_-]*$"
+    },
+    "solver": {
+      "workers": 8,
+      "seed": 7
+    }
+  },
+  "stats": {
+    "papers": 31,
+    "students": 1200,
+    "sittings": 7650,
+    "span_days": 13,
+    "slots_used": 13,
+    "duties": 408,
+    "room_slots": 204
+  },
+  "coverage_exempt": {
+    "T019": "teaches every section of every paper they teach",
+    "T020": "teaches every section of every paper they teach",
+    "T031": "teaches every section of every paper they teach",
+    "T032": "teaches every section of every paper they teach"
+  },
+  "solver": {
+    "schedule": "span optimal, rooms/balance feasible",
+    "duties": "fairness optimal, soft rules optimal",
+    "seconds": 112.8
+  }
+}

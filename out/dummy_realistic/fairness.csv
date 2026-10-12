@@ -1,0 +1,58 @@
+teacher_id,rank,department,rank_weight,duties,weighted_load,days_with_2plus_duties,own_paper_duty
+PHD01,phd,CSE,0.5,4,8.00,0,n/a (invigilation-only)
+PHD02,phd,CSE,0.5,4,8.00,0,n/a (invigilation-only)
+PHD03,phd,CSE,0.5,4,8.00,0,n/a (invigilation-only)
+PHD04,phd,CSE,0.5,4,8.00,0,n/a (invigilation-only)
+PHD05,phd,CSE,0.5,4,8.00,0,n/a (invigilation-only)
+PHD06,phd,CSE,0.5,4,8.00,0,n/a (invigilation-only)
+PHD07,phd,MGMT,0.5,4,8.00,0,n/a (invigilation-only)
+PHD08,phd,MGMT,0.5,4,8.00,0,n/a (invigilation-only)
+PHD09,phd,MGMT,0.5,4,8.00,0,n/a (invigilation-only)
+PHD10,phd,MATH,0.5,4,8.00,0,n/a (invigilation-only)
+PHD11,phd,PHY,0.5,4,8.00,0,n/a (invigilation-only)
+PHD12,phd,ECE,0.5,4,8.00,0,n/a (invigilation-only)
+T001,assistant,CSE,1.0,8,8.00,0,yes
+T002,assistant,CSE,1.0,9,9.00,1,yes
+T003,associate,CSE,0.85,8,9.41,0,yes
+T004,professor,CSE,0.7,6,8.57,0,yes
+T005,professor,CSE,0.7,6,8.57,0,yes
+T006,associate,CSE,0.85,7,8.24,0,yes
+T007,assistant,ECE,1.0,9,9.00,0,yes
+T008,associate,ECE,0.85,8,9.41,0,yes
+T009,assistant,ECE,1.0,9,9.00,0,yes
+T010,assistant,CSE,1.0,8,8.00,1,yes
+T011,associate,CSE,0.85,8,9.41,0,yes
+T012,assistant,CSE,1.0,9,9.00,0,yes
+T013,assistant,CSE,1.0,9,9.00,1,yes
+T014,assistant,CSE,1.0,9,9.00,1,yes
+T015,associate,CSE,0.85,8,9.41,0,yes
+T016,professor,MATH,0.7,6,8.57,0,yes
+T017,professor,MATH,0.7,6,8.57,0,yes
+T018,associate,MATH,0.85,8,9.41,0,yes
+T019,assistant,PHY,1.0,8,8.00,0,exempt — teaches every section of every paper they teach
+T020,associate,PHY,0.85,8,9.41,0,exempt — teaches every section of every paper they teach
+T021,associate,MATH,0.85,8,9.41,0,yes
+T022,associate,MATH,0.85,8,9.41,0,yes
+T023,assistant,CSE,1.0,9,9.00,1,yes
+T024,assistant,CSE,1.0,9,9.00,1,yes
+T025,assistant,CSE,1.0,8,8.00,0,yes
+T026,assistant,CSE,1.0,9,9.00,0,yes
+T027,assistant,CSE,1.0,9,9.00,1,yes
+T028,assistant,CSE,1.0,8,8.00,0,yes
+T029,assistant,CSE,1.0,8,8.00,0,yes
+T030,associate,CSE,0.85,8,9.41,0,yes
+T031,assistant,CSE,1.0,9,9.00,1,exempt — teaches every section of every paper they teach
+T032,assistant,CSE,1.0,9,9.00,1,exempt — teaches every section of every paper they teach
+T033,professor,MGMT,0.7,6,8.57,0,yes
+T034,assistant,MGMT,1.0,9,9.00,1,yes
+T035,assistant,DESIGN,1.0,9,9.00,1,yes
+T036,associate,MGMT,0.85,8,9.41,0,yes
+T037,professor,MGMT,0.7,6,8.57,0,yes
+T038,professor,MGMT,0.7,6,8.57,0,yes
+T039,assistant,MGMT,1.0,9,9.00,0,yes
+T040,assistant,MGMT,1.0,9,9.00,0,yes
+T041,professor,MGMT,0.7,6,8.57,0,yes
+T042,assistant,MGMT,1.0,9,9.00,0,yes
+T043,assistant,MGMT,1.0,9,9.00,1,yes
+T044,assistant,HUM,1.0,9,9.00,1,yes
+T045,associate,HUM,0.85,8,9.41,1,yes

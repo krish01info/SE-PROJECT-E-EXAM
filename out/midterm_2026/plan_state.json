@@ -1,0 +1,47 @@
+{
+  "state": "Reported",
+  "history": [
+    {
+      "at": "2026-10-12T14:32:47",
+      "from": "Start",
+      "event": "dataset validated and mapped",
+      "to": "Not Generated",
+      "note": "1502 students, 18 papers, 18 codes"
+    },
+    {
+      "at": "2026-10-12T14:32:47",
+      "from": "Not Generated",
+      "event": "feasibility check [capacity sufficient]",
+      "to": "Feasibility Checked",
+      "note": ""
+    },
+    {
+      "at": "2026-10-12T14:33:18",
+      "from": "Feasibility Checked",
+      "event": "generate schedule [2-day gap met]",
+      "to": "Scheduled",
+      "note": ""
+    },
+    {
+      "at": "2026-10-12T14:33:18",
+      "from": "Scheduled",
+      "event": "allocate seats [no adjacent same paper]",
+      "to": "Seated",
+      "note": ""
+    },
+    {
+      "at": "2026-10-12T14:33:34",
+      "from": "Seated",
+      "event": "assign duties [exclusion & coverage met]",
+      "to": "Duties Assigned",
+      "note": ""
+    },
+    {
+      "at": "2026-10-12T14:33:34",
+      "from": "Duties Assigned",
+      "event": "generate reports",
+      "to": "Reported",
+      "note": ""
+    }
+  ]
+}

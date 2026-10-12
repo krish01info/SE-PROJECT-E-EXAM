@@ -1,0 +1,79 @@
+{
+  "all_passed": true,
+  "hard": [
+    {
+      "id": "H1",
+      "rule": "Every registered (student, paper) has exactly one seat",
+      "passed": true,
+      "detail": "7720 sittings expected, 7720 seated; missing 0, duplicated 0, unexpected 0"
+    },
+    {
+      "id": "H2",
+      "rule": "All offerings (course codes) of a paper sit in its one scheduled slot",
+      "passed": true,
+      "detail": "0 seat(s) outside their paper's slot; 0 paper(s) unscheduled; 2 paper(s) have several course codes"
+    },
+    {
+      "id": "H3",
+      "rule": "No student writes on exam days less than 2 apart",
+      "passed": true,
+      "detail": "0 student(s) violate; 1200 checked"
+    },
+    {
+      "id": "H4",
+      "rule": "Each seat exists and holds at most one student per slot",
+      "passed": true,
+      "detail": "0 double-booked seat(s), 0 nonexistent seat(s)"
+    },
+    {
+      "id": "H5",
+      "rule": "No two adjacent students write the same paper",
+      "passed": true,
+      "detail": "0 adjacent same-paper pair(s); adjacency = same bench + across aisle + front/back"
+    },
+    {
+      "id": "H6",
+      "rule": "Each paper's roster is distributed in roll order across stripes",
+      "passed": true,
+      "detail": "0 paper(s) out of roll order"
+    },
+    {
+      "id": "H7",
+      "rule": "Exactly 2 invigilators per open room per slot",
+      "passed": true,
+      "detail": "205 open room-slot(s); 0 wrongly staffed; 0 duty(ies) in empty rooms"
+    },
+    {
+      "id": "H8",
+      "rule": "At most one duty per teacher per slot",
+      "passed": true,
+      "detail": "0 clash(es)"
+    },
+    {
+      "id": "H9",
+      "rule": "No teacher invigilates a room holding a student they taught for the paper written there",
+      "passed": true,
+      "detail": "0 violation(s)"
+    },
+    {
+      "id": "H10",
+      "rule": "Each teaching staff member has \u2265 1 duty on a paper they teach (PhD scholars / staff exempt)",
+      "passed": true,
+      "detail": "41/41 covered; 4 exempt (impossible by data)"
+    },
+    {
+      "id": "H11",
+      "rule": "Every pinned override is honoured",
+      "passed": true,
+      "detail": "0 pin(s); all honoured"
+    }
+  ],
+  "soft": {
+    "Exam span": "15 exam day(s) (2026-03-02 \u2192 2026-03-20)",
+    "Shortest gap between a student's exams": "2 exam day(s)",
+    "Max distinct papers in one room": "3 (soft cap 4; 0 room-slot(s) over)",
+    "Teacher-days with more than one duty": "14",
+    "Rooms with one in-domain + one out-of-domain invigilator": "171 of 205",
+    "Weighted duty load (duties \u00f7 rank weight)": "min 8.0, max 9.4"
+  }
+}

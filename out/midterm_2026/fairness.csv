@@ -1,0 +1,70 @@
+teacher_id,rank,department,rank_weight,duties,weighted_load,days_with_2plus_duties,own_paper_duty
+F001,assistant,MATH,1.0,5,5.00,0,yes
+F002,assistant,MATH,1.0,5,5.00,0,yes
+F003,professor,MATH,0.7,5,7.14,0,yes
+F004,professor,MATH,0.7,5,7.14,0,yes
+F005,assistant,MATH,1.0,6,6.00,1,yes
+F006,assistant,MATH,1.0,5,5.00,0,yes
+F007,assistant,MATH,1.0,6,6.00,1,yes
+F008,assistant,ENGG,1.0,5,5.00,0,yes
+F009,assistant,ENGG,1.0,5,5.00,0,yes
+F010,assistant,ENGG,1.0,5,5.00,0,yes
+F011,assistant,ENGG,1.0,6,6.00,1,yes
+F012,assistant,ENGG,1.0,5,5.00,0,yes
+F013,assistant,ENGG,1.0,5,5.00,0,yes
+F014,assistant,ENGG,1.0,6,6.00,1,yes
+F015,assistant,ENGG,1.0,6,6.00,1,yes
+F016,assistant,ENGG,1.0,6,6.00,1,yes
+F017,assistant,ENGG,1.0,6,6.00,1,yes
+F018,assistant,ENGG,1.0,5,5.00,0,yes
+F019,assistant,ENGG,1.0,6,6.00,1,yes
+F020,assistant,ENGG,1.0,5,5.00,0,yes
+F021,assistant,ENGG,1.0,5,5.00,0,yes
+F022,assistant,ENGG,1.0,5,5.00,0,yes
+F023,assistant,ENGG,1.0,6,6.00,1,yes
+F024,assistant,ECE,1.0,5,5.00,0,yes
+F025,assistant,ECE,1.0,6,6.00,1,yes
+F026,assistant,HUM,1.0,5,5.00,0,exempt — teaches every section of every paper they teach
+F027,assistant,SKILLS,1.0,5,5.00,0,exempt — teaches every section of every paper they teach
+F028,assistant,CSE,1.0,6,6.00,1,yes
+F029,assistant,CSE,1.0,5,5.00,0,yes
+F030,assistant,CSE,1.0,6,6.00,1,yes
+F031,assistant,CSE,1.0,5,5.00,0,yes
+F032,assistant,CSE,1.0,6,6.00,1,yes
+F033,assistant,MECH,1.0,5,5.00,0,exempt — teaches every section of every paper they teach
+F034,assistant,CSE,1.0,6,6.00,1,yes
+F035,assistant,CSE,1.0,5,5.00,0,yes
+F036,assistant,CSE,1.0,5,5.00,0,yes
+F037,assistant,CSE,1.0,5,5.00,0,yes
+F038,assistant,CSE,1.0,5,5.00,0,yes
+F039,assistant,CSE,1.0,5,5.00,0,yes
+F040,assistant,CSE,1.0,5,5.00,0,yes
+F041,assistant,CSE,1.0,5,5.00,0,yes
+F042,assistant,MGMT,1.0,5,5.00,0,exempt — teaches every section of every paper they teach
+S01,staff,ADMIN,0.5,4,8.00,0,n/a (invigilation-only)
+S02,staff,ADMIN,0.5,4,8.00,0,n/a (invigilation-only)
+S03,staff,ADMIN,0.5,4,8.00,0,n/a (invigilation-only)
+S04,staff,ADMIN,0.5,4,8.00,0,n/a (invigilation-only)
+S05,staff,ADMIN,0.5,4,8.00,0,n/a (invigilation-only)
+S06,staff,ADMIN,0.5,4,8.00,0,n/a (invigilation-only)
+S07,staff,ADMIN,0.5,4,8.00,0,n/a (invigilation-only)
+X01,staff,EXTERNAL,0.5,4,8.00,0,n/a (invigilation-only)
+X02,staff,EXTERNAL,0.5,4,8.00,0,n/a (invigilation-only)
+X03,staff,EXTERNAL,0.5,4,8.00,0,n/a (invigilation-only)
+X04,staff,EXTERNAL,0.5,4,8.00,0,n/a (invigilation-only)
+X05,staff,EXTERNAL,0.5,4,8.00,0,n/a (invigilation-only)
+X06,staff,EXTERNAL,0.5,4,8.00,0,n/a (invigilation-only)
+X07,staff,EXTERNAL,0.5,4,8.00,0,n/a (invigilation-only)
+X08,staff,EXTERNAL,0.5,4,8.00,0,n/a (invigilation-only)
+X09,staff,EXTERNAL,0.5,4,8.00,0,n/a (invigilation-only)
+X10,staff,EXTERNAL,0.5,4,8.00,0,n/a (invigilation-only)
+X11,staff,EXTERNAL,0.5,4,8.00,0,n/a (invigilation-only)
+X12,staff,EXTERNAL,0.5,4,8.00,0,n/a (invigilation-only)
+X13,staff,EXTERNAL,0.5,4,8.00,0,n/a (invigilation-only)
+X14,staff,EXTERNAL,0.5,4,8.00,0,n/a (invigilation-only)
+X15,staff,EXTERNAL,0.5,4,8.00,0,n/a (invigilation-only)
+X16,staff,EXTERNAL,0.5,4,8.00,0,n/a (invigilation-only)
+X17,staff,EXTERNAL,0.5,4,8.00,0,n/a (invigilation-only)
+X18,staff,EXTERNAL,0.5,4,8.00,0,n/a (invigilation-only)
+X19,staff,EXTERNAL,0.5,4,8.00,0,n/a (invigilation-only)
+X20,staff,EXTERNAL,0.5,4,8.00,0,n/a (invigilation-only)

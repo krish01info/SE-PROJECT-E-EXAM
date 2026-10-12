@@ -1,0 +1,19 @@
+paper_id,title,course_codes,date,weekday,session,students,side
+CSE3703,Cryptography,CSE3703,2026-03-23,Mon,Morning,395,A
+ECE2016,Linear Integrated Circuits,ECE2016,2026-03-23,Mon,Morning,17,B
+FIN1001,Financial Markets: From Fundamentals to AI-Driven Analytics,FIN1001,2026-03-23,Mon,Morning,42,B
+MTH1802,Numerical Methods,MTH1802,2026-03-23,Mon,Morning,57,B
+MTH1803,Discrete Mathematics,MTH1803,2026-03-23,Mon,Morning,244,B
+CSE3722,"IoT Networks, Architectures and Applications",CSE3722,2026-03-24,Tue,Afternoon,394,A
+ECE2705,Circuit Analysis and Synthesis,ECE2705,2026-03-24,Tue,Afternoon,17,A
+MTH2801,Probability and Statistics,MTH2801,2026-03-24,Tue,Afternoon,485,B
+CSE3702,Theory of Computation,CSE3702,2026-03-25,Wed,Morning,409,B
+PRJ1101,Joy of Engineering,PRJ1101,2026-03-25,Wed,Morning,485,A
+CSE2029,Data Communications & Computer Networks,CSE2029,2026-03-26,Thu,Morning,430,A
+MEC2025,Casting and welding of Metals,MEC2025,2026-03-26,Thu,Morning,12,B
+PSP4706,Logical Reasoning and Quantitative Analysis,PSP4706,2026-03-26,Thu,Morning,409,B
+PSP1805,"Science, Technology, and Public Policy",PSP1805,2026-03-26,Thu,Afternoon,180,A
+CSE3726,Blockchain and Cryptocurrency Technologies,CSE3726,2026-03-27,Fri,Morning,44,B
+CSE4007,Deep Learning,CSE4007,2026-03-27,Fri,Morning,185,A
+ECE1101,Basic Electrical and Electronics Engineering,ECE1101,2026-03-27,Fri,Morning,255,A
+SKL2711,Career Training and Corporate Skills,SKL2711,2026-03-27,Fri,Morning,426,B

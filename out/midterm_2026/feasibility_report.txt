@@ -1,0 +1,8 @@
+Pre-solve feasibility check: PASS — no capacity shortfall detected
+  [info] calendar: 5 exam day(s) × 2 session(s) = 10 slot(s); minimum gap between a student's exam days = 1
+  [info] slot-capacity: at most 34 of 36 room(s) can open per slot (limited by invigilators: 69 invigilator(s), 2 per room); they hold 1020 seats — 510 on side A, 510 on side B
+  [info] student-day-bound: the busiest student (23C1004) writes 5 papers, needing ≥ 5 exam days at gap 1; calendar has 5
+  [info] conflict-clique: largest group of mutually conflicting papers: 5 → ≥ 5 exam days
+  [info] total-seats: 4486 paper-sittings vs 10200 seats across all slots (44% utilisation if fully spread)
+  [info] duty-pool: ≥ 300 invigilation duties needed; pool supplies at most 690 (1 per teacher per slot)
+  [WARNING] coverage-exempt: 4 teacher(s) teach every section of their paper(s), so 'one duty on a paper you teach' is impossible for them; they are exempted: F026, F027, F033, F042

@@ -1,0 +1,32 @@
+paper_id,title,department
+DSA,Data Structures & Algorithms,CSE
+OOPS,Object Oriented Programming,CSE
+LA,Linear Algebra,MATH
+DAP,Data Analysis in Python,CSE
+OS,Operating Systems,CSE
+DLD,Digital Logic Design,ECE
+SPHY,Semiconductor Physics,PHY
+QM,Quantum Mechanics,PHY
+DM,Discrete Mathematics,MATH
+ML,Machine Learning,CSE
+AI,Artificial Intelligence,CSE
+SE,Software Engineering,CSE
+COA,Computer Architecture & Organization,CSE
+IOT,Internet of Things,ECE
+CODE,Coding Skills,CSE
+ADS,Advanced Data Science,CSE
+BDA,Big Data Analysis,CSE
+CYS,Cyber Security,CSE
+MACRO,Macroeconomics,MGMT
+BSTAT,Business Statistics,MGMT
+BCOM,Business Communication,MGMT
+FIN,Finance,MGMT
+MKT,Marketing,MGMT
+DT,Design Thinking,DESIGN
+BLAW,Business Law,MGMT
+STRAT,Strategic Management,MGMT
+OPM,Operations Management,MGMT
+HAPPY,Happiness,HUM
+BITM,Bringing Ideas to Market,MGMT
+EIB,Ethics & Integrity in Business,MGMT
+OB,Organizational Behaviour,MGMT

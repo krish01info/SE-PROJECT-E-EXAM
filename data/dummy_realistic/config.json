@@ -1,0 +1,33 @@
+{
+  "name": "Dummy dataset \u2014 Phase 0 \u00a79 (realistic variant)",
+  "calendar": {
+    "start": "2026-03-02",
+    "end": "2026-03-27",
+    "weekdays": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "holidays": [],
+    "sessions": [
+      "Morning",
+      "Evening"
+    ]
+  },
+  "scheduling": {
+    "min_day_gap": 2,
+    "time_limit_s": 60
+  },
+  "seating": {
+    "front_back_adjacent": true,
+    "across_aisle_adjacent": true,
+    "max_papers_per_room_soft": 4
+  },
+  "duties": {
+    "invigilators_per_room": 2,
+    "require_own_paper_duty": true,
+    "time_limit_s": 120
+  }
+}

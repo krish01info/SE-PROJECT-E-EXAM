@@ -1,0 +1,19 @@
+Verification: ALL HARD RULES PASS
+  PASS  H1   Every registered (student, paper) has exactly one seat — 7720 sittings expected, 7720 seated; missing 0, duplicated 0, unexpected 0
+  PASS  H2   All offerings (course codes) of a paper sit in its one scheduled slot — 0 seat(s) outside their paper's slot; 0 paper(s) unscheduled; 2 paper(s) have several course codes
+  PASS  H3   No student writes on exam days less than 2 apart — 0 student(s) violate; 1200 checked
+  PASS  H4   Each seat exists and holds at most one student per slot — 0 double-booked seat(s), 0 nonexistent seat(s)
+  PASS  H5   No two adjacent students write the same paper — 0 adjacent same-paper pair(s); adjacency = same bench + across aisle + front/back
+  PASS  H6   Each paper's roster is distributed in roll order across stripes — 0 paper(s) out of roll order
+  PASS  H7   Exactly 2 invigilators per open room per slot — 205 open room-slot(s); 0 wrongly staffed; 0 duty(ies) in empty rooms
+  PASS  H8   At most one duty per teacher per slot — 0 clash(es)
+  PASS  H9   No teacher invigilates a room holding a student they taught for the paper written there — 0 violation(s)
+  PASS  H10  Each teaching staff member has ≥ 1 duty on a paper they teach (PhD scholars / staff exempt) — 41/41 covered; 4 exempt (impossible by data)
+  PASS  H11  Every pinned override is honoured — 0 pin(s); all honoured
+  Soft measures:
+    · Exam span: 15 exam day(s) (2026-03-02 → 2026-03-20)
+    · Shortest gap between a student's exams: 2 exam day(s)
+    · Max distinct papers in one room: 3 (soft cap 4; 0 room-slot(s) over)
+    · Teacher-days with more than one duty: 14
+    · Rooms with one in-domain + one out-of-domain invigilator: 171 of 205
+    · Weighted duty load (duties ÷ rank weight): min 8.0, max 9.4

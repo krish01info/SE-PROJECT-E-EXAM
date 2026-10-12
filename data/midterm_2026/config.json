@@ -1,0 +1,40 @@
+{
+  "name": "Mid-term exams, March 2026 (reconstructed from the master sheet)",
+  "calendar": {
+    "start": "2026-03-23",
+    "end": "2026-03-27",
+    "weekdays": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "holidays": [],
+    "sessions": [
+      "Morning",
+      "Afternoon"
+    ]
+  },
+  "scheduling": {
+    "min_day_gap": 1,
+    "time_limit_s": 60
+  },
+  "seating": {
+    "front_back_adjacent": true,
+    "across_aisle_adjacent": true,
+    "max_papers_per_room_soft": 4
+  },
+  "duties": {
+    "invigilators_per_room": 2,
+    "require_own_paper_duty": true,
+    "time_limit_s": 90,
+    "rank_weights": {
+      "professor": 0.7,
+      "associate": 0.85,
+      "assistant": 1.0,
+      "phd": 0.5,
+      "staff": 0.5
+    }
+  }
+}
