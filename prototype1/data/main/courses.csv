@@ -1,0 +1,25 @@
+course_code,title,cohort_id,kind
+AIM2201,Machine Learning Foundations,AIML2,CORE
+AIM2202,Data Structures for AI,AIML2,CORE
+AIM2203,Probability and Statistics,AIML2,CORE
+AIM2204,Database Systems,AIML2,CORE
+AIM2101,Professional Communication,AIML2,ELECTIVE
+AIM2102,Applied Mathematics,AIML2,ELECTIVE
+AIM2103,Environmental Studies,AIML2,ELECTIVE
+AIM2104,Engineering Economics,AIML2,ELECTIVE
+ECE2201,Analog Circuits,ECE2,CORE
+ECE2202,Digital Electronics,ECE2,CORE
+ECE2203,Signals and Systems,ECE2,CORE
+ECE2204,Network Theory,ECE2,CORE
+ECE2101,Professional Communication,ECE2,ELECTIVE
+ECE2102,Applied Mathematics,ECE2,ELECTIVE
+ECE2103,Environmental Studies,ECE2,ELECTIVE
+ECE2104,Engineering Economics,ECE2,ELECTIVE
+CYB2201,Network Security,CYB2,CORE
+CYB2202,Operating Systems,CYB2,CORE
+CYB2203,Cryptography Foundations,CYB2,CORE
+CYB2204,Secure Programming,CYB2,CORE
+CYB2101,Professional Communication,CYB2,ELECTIVE
+CYB2102,Applied Mathematics,CYB2,ELECTIVE
+CYB2103,Environmental Studies,CYB2,ELECTIVE
+CYB2104,Engineering Economics,CYB2,ELECTIVE
