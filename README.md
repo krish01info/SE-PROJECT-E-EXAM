@@ -12,7 +12,13 @@ Course project for CSE3005 Software Engineering, BML Munjal University, 2026–2
 
 ## Team
 
-Harsh Vardhan · Himank Swami · Ishan Batra · Koushik Araveti · Krish Sharma
+| Who | Works on |
+|---|---|
+| Ishan Batra | Maintainer: reviews and merges every pull request, and makes releases. |
+| Krish Sharma, Himank Swami | Dummy input data and the engine: schedule, seating and duties. |
+| Harsh Vardhan, Koushik Araveti | The terminal app for running the tool and changing its settings, the output checker, and the Google Sheets, Gmail and Calendar connectors. |
+
+Each pair splits its own work.
 
 ## Folders
 
