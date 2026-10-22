@@ -171,7 +171,7 @@ same_paper:              # Decided. Codes that are one question paper.
 - **Decided:** a teacher has at most one duty per slot.
 - **Decided (Phase 0):** a teacher never invigilates a room containing a student they teach for the paper being written there. "Teach" comes from `teaching.csv`: a teacher, a course code and a section.
 - **Decided (Phase 0):** a teacher invigilates each paper they teach at least once, in a room without their own students. PhD scholars are exempt.
-- **Open:** a teacher who teaches every section writing a paper cannot meet both rules. Exempt them and report it, or make the rule soft.
+- **Team decision (was Open):** a teacher who teaches every section writing a paper cannot meet both rules. Instead, they get a duty in the same slot as their paper, in a room writing a different paper. If no such room is open, the tool reports it. The "never their own class" rule still holds.
 - **Default:** spread duties as evenly as possible. PhD scholars may get fewer.
 - **Out (later):** rank-weighted fairness, in-domain and out-of-domain pairing, and at most one duty per day.
 - The exam cell's current practice (course teachers invigilating their own exam) is not modelled.
@@ -263,7 +263,7 @@ Do one step at a time. Each step is gated: the AI asks questions before it start
 | 3 | Can one seat column hold two papers? | No |
 | 4 | Which separation rules go in `constraints.yaml`, and what do they mean? | None until a use case exists |
 | 5 | What makes one valid schedule better than another? | A shorter exam period |
-| 6 | What happens to a teacher who teaches every section of a paper? | None |
+| 6 | What happens to a teacher who teaches every section of a paper? | **Decided by the team (2026-10-22):** a duty in the same slot, in a room writing a different paper; reported if impossible (§10) |
 | 7 | How is duty fairness measured? | Even counts; PhD scholars may get fewer |
 | 8 | Are program electives in prototype1? | Yes |
 | 9 | What is the paper ID of a `same_paper` group? | Its first code |
@@ -280,3 +280,4 @@ Do one step at a time. Each step is gated: the AI asks questions before it start
 | Date | Change | Reason | Approved by |
 |---|---|---|---|
 | 2026-10-13 | First version | — | Ishan |
+| 2026-10-22 | §10 and §15 Q6: a teacher who teaches every section of a paper gets a duty in the same slot, in a room writing a different paper | The subject teacher should be present while their paper is written, so they can fix any error in it. They don't need to be in the room with their own students. Needed because the dataset has papers written by one section only (e.g. Thermodynamics, BT2ME). | Pending (Ishan, via PR) |
