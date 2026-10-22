@@ -6,6 +6,12 @@ output/
 *.xls
 raw/
 
+# Google API keys and login tokens. Never committed.
+credentials.json
+token.json
+client_secret*.json
+.env
+
 # Python
 __pycache__/
 *.pyc
