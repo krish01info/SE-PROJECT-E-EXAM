@@ -239,11 +239,11 @@ same_paper:              # Decided. Codes that are one question paper.
 
 ## 14. Build steps
 
-Do one step at a time. Each step is gated: the AI asks questions before it starts and asks for a check after it finishes (`repo_instructions.md` §3).
+Steps are best done one at a time, at your own pace. Before a step, the AI lists what it will change and asks you to confirm. After it, the AI suggests the check below (`repo_instructions.md` §2 and §4).
 
-| # | Step | Check before moving on |
+| # | Step | Check |
 |---|---|---|
-| 0 | Understand. The AI explains `prototype1_expectations.md`. No code. | The human describes the tool and the data idea in their own words. |
+| 0 | Understand. The AI explains `prototype1_expectations.md`. No code. | The AI recaps the tool and the data idea, and the user confirms or corrects it. |
 | 1 | Dataset design. Answer the questions in `data_design_spec.md` §6 with reasons. No code. | The answers and reasons are written in `data_design_spec.md` §8. |
 | 2 | Generator. A script in `tools/` writes the `tiny` and `main` input folders. | Open the files and check a few rows by hand against the design. |
 | 3 | Load and validate. `main.py` reads an input folder and reports every problem (§12). | Break a file on purpose and read the error. |
@@ -271,7 +271,7 @@ Do one step at a time. Each step is gated: the AI asks questions before it start
 
 ## 16. Changing this spec
 
-- **Decided items:** change them only with proper reasoning. Name the decision, show a concrete problem with it (an example, a failing case, numbers), and say what the change costs. Open a pull request that edits this file and adds a row below. Ishan approves.
+- **Decided items:** change them with a written reason. Name the decision and say why it should change. A concrete problem (an example, a failing case, numbers) and what the change costs make the strongest case. Open a pull request that edits this file and adds a row below marked "Pending Ishan review". Ishan reviews it.
 - **Default items:** the team may change them. Add a row below with a one-line reason.
 - **Open items:** the team decides. Update §15 and add a row below.
 
@@ -280,3 +280,4 @@ Do one step at a time. Each step is gated: the AI asks questions before it start
 | Date | Change | Reason | Approved by |
 |---|---|---|---|
 | 2026-10-13 | First version | — | Ishan |
+| 2026-10-22 | Steps are no longer gated: the AI lists the changes and asks to confirm, then suggests a check. Decided items change with one written reason, reviewed by Ishan. | Coding agents got stuck in loops on the old gate. The rules are now warnings, and reasons are recorded for review instead of argued until accepted. | Ishan |

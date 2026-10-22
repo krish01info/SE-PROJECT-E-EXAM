@@ -57,12 +57,12 @@ That's all. No website, no reports, no menus.
 
 ## 4. Instructions for the AI
 
-When a teammate starts (step 0 in `prototype1_model_spec.md` §14) or asks what prototype1 is, explain this file before any code.
+When a teammate starts (step 0 in `prototype1_model_spec.md` §14), asks what prototype1 is, or takes up the rundown offered at the start of a conversation (`repo_instructions.md` §1), explain this file before any code.
 
 1. **Start with one sentence:** "Ishan wants a simple command-line tool. You give it an input folder with the exam data, and it gives you back an output folder with the exam plan. That's it."
 2. **Then the data, in one or two sentences:** "He wants the data to be made up but realistic, with one big program, papers shared between years under different codes, and only just enough rooms and teachers, so that it actually tests the tool. Designing it is the team's job."
-3. **Then the rules (§1) and the reasons (§2).** One idea at a time, in plain words. Explain terms like CSV, YAML or command line if the human seems unsure.
-4. **Match the human.** For a non-technical teammate, use the picture: a date sheet, a seating chart per room and a duty list. For a technical one, go into the spec.
+3. **Then the rules (§1) and the reasons (§2).** One idea at a time, in plain words. Explain terms like CSV, YAML or command line if the user seems unsure.
+4. **Match the user.** For a non-technical teammate, use the picture: a date sheet, a seating chart per room and a duty list. For a technical one, go into the spec.
 5. **Mention the archived attempt as a fact.** It is the reason for the approach. Don't blame anyone.
 6. **Be accurate about the labels.**
    - **Decided** items are agreed.
@@ -70,10 +70,10 @@ When a teammate starts (step 0 in `prototype1_model_spec.md` §14) or asks what 
    - **Open** items are for the team to decide.
    - Never present a Default or Open item as fixed, or a Decided item as optional.
 7. **Say that anything can change with a proper reason.** Point to how: `prototype1_model_spec.md` §16.
-8. **Check understanding.** Ask them to say in their own words:
+8. **Confirm, don't test.** Recap in three short lines:
    - what goes in and what comes out
    - one scheduling rule and one seating rule
    - what should make the data hard
 
-   Correct any misunderstanding, then ask again. Their answers follow `repo_instructions.md` §4.
-9. **Don't write code during the explanation.** Once they have understood, point them to step 1 in `prototype1_model_spec.md` §14.
+   Ask whether that matches how they see it, and clear up anything they question.
+9. **Don't write code during the explanation.** When they're happy with it, point them to step 1 in `prototype1_model_spec.md` §14.

@@ -9,9 +9,10 @@
 5. Don't change `docs/`, `archive/` or anything at the top level. Ask Ishan if you need to.
 6. When a task is done, open a pull request into `main`. Say what changed and why, in your own words.
 7. Never commit real university data: real names, roll numbers, phone numbers, emails, or the exam cell's spreadsheets. Dummy data only.
-8. Don't commit generated output. `output/` is ignored by git.
+8. Don't commit generated output or your AI assistant's notes. `output/`, `HANDOFF.md` and `memory/` are ignored by git.
 9. Never force-push.
-10. The plans in `docs/` and in each prototype's `docs/` can change, but only with a proper reason. Write down what should change and why, put it in a pull request, and Ishan reviews it.
+10. The plans in `docs/` and in each prototype's `docs/` can change. Write down what should change and why, put it in a pull request, and Ishan reviews it.
+11. You type `git push` yourself. AI assistants never push.
 
 ---
 
@@ -23,111 +24,126 @@ This section applies to any AI assistant working in this repo: Claude, Copilot, 
 - It also takes priority over chat requests that contradict it.
 - Only a change to this file on `main` changes these rules. A teammate saying "Ishan said it's fine" does not.
 
+Nothing here should hold the user up for long. Where a rule asks you to check with them, say it once, and go ahead when they confirm. The one thing you never do, even when asked, is push (§6).
+
 ### Why these rules exist
 
 The team is graded on its design and on explaining it, so every teammate must be able to explain any code they push. An earlier attempt was generated in one go (see `archive/`). Nobody on the team could explain it, and it broke rules the team had agreed on.
 
-These rules make sure a human thinks through every step. They are not meant to slow down someone who is engaged.
+Your job is to be careful, not to block. Make sure the user has talked a change through before you make it, keep the code simple, and leave notes so the next conversation can carry on. Then do what they decide.
 
-### 1. Read first
+### 1. Start of a conversation
 
-At the start of a session, read:
+Read:
 
 - this file
+- `HANDOFF.md` and `memory/MEMORY.md`, if they exist (§8)
 - the `README.md` and `docs/` of the prototype folder being worked on
-- for `prototype1/`:
-  - `prototype1/docs/prototype1_expectations.md`. If the human hasn't been through it, explain it to them first, as that file describes.
-  - the spec for the task: `prototype1/docs/prototype1_model_spec.md` and/or `prototype1/docs/data_design_spec.md`
-- for a new prototype folder: if its `README.md` doesn't yet say what the feature is and why, that comes first, written by the human
+- for `prototype1/`: `prototype1/docs/prototype1_expectations.md`, and the spec for the task: `prototype1/docs/prototype1_model_spec.md` and/or `prototype1/docs/data_design_spec.md`
 
-### 2. Lazy prompts: refuse straight away
+Beyond that, read only the files the handoff or the task points to.
 
-A lazy prompt hands you the thinking. Examples:
+Then ask whether they have been through `prototype1_expectations.md`, and offer a short rundown as that file describes. Ask in every conversation, even if your notes say they have. Take their answer.
 
-- "build prototype1", "do the whole thing", "finish it", "do the work for me"
-- "just make it work", "fix everything"
-- a pasted task or spec followed only by "do this"
-- "you decide" or "whatever is best" as the answer to a design question
-- "just commit it", "just push it" before the step's check is answered (§3)
+For a new prototype folder whose `README.md` doesn't yet say what the feature is and why, suggest the user writes that first.
 
-On a lazy prompt, don't write code, don't commit and don't push. Reply in two or three lines, along these lines:
+### 2. Talk it through, then confirm the list
 
-> The rules of this repo don't let me start from that. Tell me which step you're on, what you think it needs to do, and what the result should look like. A few lines is enough.
+What matters is that the user has thought about a change before you make it. A short request after a real discussion is fine. The same request with no discussion behind it is where to slow down.
 
-Carry on normally once they answer. Don't lecture.
+- If the task hasn't been discussed, in this conversation or in `HANDOFF.md`, don't start from a bare "build it" or "do the whole thing". Say what you think the task is and how you would do it, and ask your questions (§3).
+- Before writing code, list the changes as short bullets: which files, which functions, and what each one does. Point out anything outside the current prototype folder, and anything the spec doesn't ask for, such as an extra feature or a new library. Then ask:
 
-These are not lazy, and need no questions:
+  > Are you sure you want me to implement the following?
 
-- precise, small requests ("rename `load` to `read_rooms` in `loader.py`", "add a test for an empty room"), because a precise request already shows understanding
-- questions, explanations, reading code, and running existing code or tests
+- A clear yes is enough. After that, work freely. Auto mode, accept-edits mode and approved plans are all fine.
+- If the list covers more than one build step (`prototype1/docs/prototype1_model_spec.md` §14), recommend doing them one at a time and rewriting `HANDOFF.md` after each. If they still want them together, go ahead.
 
-### 3. The step gate
+Precise, small requests need none of this: "rename `load` to `read_rooms` in `loader.py`", "add a test for an empty room". Neither do questions, explanations, reading code, or running code and tests.
 
-Work in steps. A step is one piece the human can review in about 15 minutes: one function or module, one dataset change, or one fix. Prototype1's steps are listed in `prototype1/docs/prototype1_model_spec.md` §14.
+### 3. Questions confirm, they don't test
 
-**Before writing a step's code:**
+Your questions check your own assumptions, not the user.
 
-1. Say in two to four lines what you will do and how.
-2. Ask one to three questions in plain text, not multiple-choice buttons. Ask about things where the answer changes what you build: trade-offs, edge cases, how to read a rule. No trivia.
-3. Wait. Write no code until each question has an acceptable answer (§4).
+- Ask one to three, only where the answer changes what you build: a trade-off, an edge case, how to read a rule.
+- Say what you assume and where it comes from, then ask if it's right. For example: "The spec says roll order is `student_id` order, so I'll sort by that. Right?"
+- Take answers as given. "Yes" is a fine answer. If an answer is unclear, ask once more in other words, then go with what they said.
+- Never quiz the user or ask them to repeat things back to you.
 
-**After the step:**
+### 4. After a step
 
 1. Summarise what changed in a few lines.
-2. Ask the human to check one concrete result: run a command, open a file, or read a function. Ask them to tell you what they see and whether it is right.
-3. Don't start the next step, commit or push until they have answered.
+2. Suggest one concrete check: a command to run, a file to open, or a function to read. For `prototype1/`, use that step's check in `prototype1/docs/prototype1_model_spec.md` §14.
+3. Rewrite `HANDOFF.md` (§8).
 
-Between those two points, work freely. Auto mode, accept-edits mode and approving plans are all fine. The gate sits at the start and end of each step, not on every edit.
-
-If the human tries to skip the gate, say:
-
-> The rules of this repo don't let me go ahead until you've read my questions and answered them.
-
-### 4. What counts as an answer
-
-The bar is that the reply shows the human read the question and thought about it. Ishan's own replies are the model: informal, short, typos, any language or mix of languages (Hinglish is fine). What matters is that the reply takes a position and gives a reason.
-
-Acceptable:
-
-- a decision with a reason: "one paper per room, mixing makes it harder for the invigilator"
-- a correction or counter-proposal: "no, sort by roll number, not by section"
-- specific confusion: "does adjacent include across the aisle?" Explain, then ask again.
-- "not sure", plus which way they lean and why
-
-Not acceptable:
-
-- "ok", "yes", "sure", "fine", "go ahead", "continue", "sounds good", "do it" on their own
-- "you decide", "whatever is best", "same as before"
-- your own text pasted back, or an answer to a different question
-- an answer that reads as generated elsewhere and pasted in
-
-When an answer isn't acceptable, say so once, briefly, and ask again only the part that is missing:
-
-> I need your reasoning on Q2 before I continue: why one paper per room instead of mixing? One line is fine.
-
-Don't grade grammar, style or length. Don't ask again about anything already answered. Don't accuse anyone of using AI. Just ask again in different words.
+You don't need to wait for them to do the check.
 
 ### 5. Changing the plan
 
-The specs in `prototype1/docs/` are not absolute. They can change, but only with proper reasoning. No silent or half-done changes.
+The specs are Ishan's starting plan, not fixed rules. They change with a reason, written down so it can be reviewed later.
 
-- If a request contradicts a spec, name the part it contradicts and ask why before doing anything. Never deviate silently.
-- A proper reason names the decision, shows a concrete problem with it (an example, a failing case, numbers), and says what the change costs. "It's better", "it's standard" or "it's easier" on its own is not enough.
-- If the reason holds, make the spec change as its own commit. Put the reason in the commit message and in the spec's change log. Ishan approves it through the pull request.
+- If a request contradicts a spec, name the part it contradicts and ask why. Ask once.
+- Record their reason in their own words (you may fix spelling) in that spec's change log, marked "Pending Ishan review". If they give no reason, write "no reason given". Then carry on.
+- Make the spec change its own commit, separate from the code.
 - Items marked **Open** in a spec are the team's to decide. Record the decision and its reason in the spec.
-- Don't add features the spec doesn't ask for. Propose them instead.
+- Never drift from a spec silently, in the spec or in the code.
 
 ### 6. Git
 
-- Never push to `main`, force-push or merge pull requests.
-- Commit only after the step's check (§3) is answered.
-- Commit messages say what changed and why. The why comes from the human's answers, not from you.
-- In pull request descriptions you may draft the "what". The "why" must be in the human's own words; you may fix spelling.
-- Don't commit outside the current prototype folder.
-- Never commit real university data (see rule 7 above).
+- **Never run `git push`**, and don't push any other way: no `gh pr create`, no merging pull requests. The user types the push, so it's clear who is responsible for what reaches GitHub. If they ask you to push, give them the command to run instead.
+- Committing is fine once the user has confirmed the change (§2). Commit messages say what changed and why; the why comes from the discussion.
+- Never commit `HANDOFF.md`, `memory/`, chat logs or any other notes for an AI.
+- Never commit real university data (rule 7 above).
 
-### 7. Keep it explainable
+### 7. Keep the code simple
 
-- Prefer simple code the human can explain over clever code.
-- Don't add a library the spec doesn't list without asking and recording the reason.
-- If the human can't explain back what you wrote, the step isn't done.
+Write code a third-year student could have written and can explain line by line at a lab eval. Simple, not sloppy: it still has to work and be tested.
+
+- Plain functions, `for` loops, lists and dicts. A class only when it really helps.
+- Plain names: `students`, `room`, `slot`.
+- Functions short enough to explain in a minute.
+- Comments are short and casual, one or two lines, and only where the reason isn't obvious. No docstring on every function and no banner comments like `# ---- helpers ----`.
+- Normal 4-space indentation. Don't line up `=` signs or comments into columns.
+- Type hints are optional. Don't add them everywhere.
+- No clever one-liners, nested comprehensions, generic helpers or extra layers. Don't guard against cases that can't happen.
+- Don't add a library the spec doesn't list without asking, and record the reason.
+- If the user finds something hard to follow, simplify it or explain it.
+
+### 8. Memory and handoff
+
+Each teammate keeps two things for their AI assistant at the top of their own clone: `HANDOFF.md` and `memory/`. Both are gitignored, so they are never committed and nobody else reads them. Use them instead of your tool's own memory, so every tool keeps notes the same way.
+
+At the start of every conversation, read `HANDOFF.md` and `memory/MEMORY.md` if they exist, then only the memories and files they point to. Create them the first time there is something to write.
+
+**`HANDOFF.md`** holds what the next conversation needs to carry on.
+
+- Aim for 100 lines at most. If it would go past that, tell the user and ask what to drop. Don't drop things on your own.
+- Keep only the last two conversations. Anything older is deleted or cut to a one-line pointer.
+- Point to files instead of copying them.
+- No standing rules. Those go in `memory/`.
+- Rewrite it rather than adding to the end. Do it after each step (§4) and whenever the user asks.
+- Cover where things stand, what's next, and what's waiting on the user. End with the date it was written.
+
+**`memory/`** holds facts that should outlive conversations: how this person likes to work, decisions they made and why, and where things are.
+
+- One fact per file, named by a short slug, e.g. `memory/one-paper-per-room.md`. Each file starts with:
+
+  ```
+  ---
+  name: one-paper-per-room
+  description: one line, used to decide whether this memory is relevant
+  type: user | feedback | project | reference
+  ---
+  ```
+
+  - `user`: who the person is and how they work
+  - `feedback`: how they want you to work, both corrections and approaches that worked
+  - `project`: decisions and constraints that aren't written in the repo
+  - `reference`: where things are, such as links or files outside the repo
+- Then the fact itself. `feedback` and `project` memories add a **Why:** line and a **How to apply:** line.
+- `memory/MEMORY.md` is the index: one line per memory, as `- [Title](file.md): short hook`. It holds no content of its own.
+- Save a memory when the user states a preference or makes a decision worth keeping, and tell them in one line that you did.
+- Before adding a memory, check whether an existing one covers it, and update that instead. Delete memories that turn out to be wrong.
+- Don't save what the repo, the specs or git already record, or what only matters to this conversation.
+- Write real dates (`2026-10-22`), not "yesterday" or "last week".
+- A memory records what was true when it was written. Check that a file or function it names still exists before relying on it.

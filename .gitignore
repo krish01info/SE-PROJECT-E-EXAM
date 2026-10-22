@@ -13,8 +13,12 @@ __pycache__/
 venv/
 .ipynb_checkpoints/
 
+# Each person's AI notes. Never committed.
+HANDOFF.md
+memory/
+
 # Local tool settings
-.claude/settings.local.json
+.claude/
 .vscode/
 .idea/
 .DS_Store
