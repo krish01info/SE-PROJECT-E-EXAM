@@ -131,10 +131,10 @@ same_paper:              # Decided. Codes that are one question paper.
 - **Decided:** exams happen only on exam days, which are within the window, an exam weekday, and not a holiday.
 - **Decided:** the gap rule. Any two papers of one student are on dates at least `min_gap_days` calendar days apart. So no student has two papers on one day or on consecutive days. Friday then Monday is fine.
 - **Decided:** every slot's papers must be seatable (§9) and staffable (§10).
-- **Open:** how the scheduler makes sure of that, whether by checking while scheduling or by retrying.
-- **Open:** the algorithm. It must be explainable (§13).
-- **Open:** what makes one valid schedule better than another: a short exam period (the Phase 0 objective), even load across slots, or fewer rooms at the peak. **Default:** finding any valid schedule comes first, and a shorter period is better.
-- **Useful fact (Phase 0):** the session doesn't affect the gap rule, because morning and evening of one day are the same date. So papers can be given dates first, and morning or evening chosen afterwards to balance seats and teachers.
+- **Decision pending Ishan review:** use safe capacity bounds while placing papers, then check exact seating and eligible teacher assignments before accepting a complete schedule. A partial slot that cannot yet be staffed may become feasible when another paper permits room mixing, so do not reject it on a full staffing check prematurely. If a legal seating arrangement cannot be staffed, keep it only as an internal candidate while trying other legal arrangements for the same slot. If none can be staffed, backtrack to another paper placement. Internal candidates last only for the current run; they are not exported as partial plans. Room order, roll order and the mixing rule in §9 still apply.
+- **Decided:** use deterministic backtracking. When a partial placement cannot be completed, undo an earlier placement and try another. It must remain explainable (§13).
+- **Decided for the MVP:** find any valid schedule inside the configured window. Do not optimize exam-period length or balance papers across slots; those objectives are out of scope for now.
+- **Useful fact (Phase 0):** the session doesn't affect the gap rule, because morning and evening of one day are the same date. Seats and teachers do depend on the session, so the scheduler searches date/session pairs together. Load balancing is not an MVP objective.
 
 ## 9. Seating rules
 
@@ -171,7 +171,7 @@ same_paper:              # Decided. Codes that are one question paper.
 - **Decided:** a teacher has at most one duty per slot.
 - **Decided (Phase 0):** a teacher never invigilates a room containing a student they teach for the paper being written there. "Teach" comes from `teaching.csv`: a teacher, a course code and a section.
 - **Decided (Phase 0):** a teacher invigilates each paper they teach at least once, in a room without their own students. PhD scholars are exempt.
-- **Open:** a teacher who teaches every section writing a paper cannot meet both rules. Exempt them and report it, or make the rule soft.
+- **Decision pending Ishan review:** when a teacher teaches every section writing a paper, exempt that teacher from the requirement to invigilate that paper. The exemption applies only to that teacher-paper pair; they must still invigilate other papers they teach where the requirement is possible. Never exempt them from the ban on supervising their own students. Report the teacher ID, paper ID and exemption reason in the command-line output.
 - **Default:** spread duties as evenly as possible. PhD scholars may get fewer.
 - **Out (later):** rank-weighted fairness, in-domain and out-of-domain pairing, and at most one duty per day.
 - The exam cell's current practice (course teachers invigilating their own exam) is not modelled.
@@ -263,11 +263,13 @@ Do one step at a time. Each step is gated: the AI asks questions before it start
 | 3 | Can one seat column hold two papers? | No |
 | 4 | Which separation rules go in `constraints.yaml`, and what do they mean? | None until a use case exists |
 | 5 | What makes one valid schedule better than another? | A shorter exam period |
-| 6 | What happens to a teacher who teaches every section of a paper? | None |
+| 6 | What happens to a teacher who teaches every section of a paper? | Pending Ishan review: exempt them from invigilating that paper, report the exemption, and retain the ban on supervising their own students. |
 | 7 | How is duty fairness measured? | Even counts; PhD scholars may get fewer |
 | 8 | Are program electives in prototype1? | Yes |
 | 9 | What is the paper ID of a `same_paper` group? | Its first code |
 | 10 | What are the session names and times? | `morning`, `evening`; times not modelled |
+| 11 | Which scheduling algorithm and objective? | Deterministic backtracking; find any valid schedule within the configured window, without duration or load optimization. |
+| 12 | How are seating and staffing checked during scheduling? | Pending Ishan review: safe bounds during placement, exact seating/staffing before accepting the schedule. Try other legal layouts before moving papers; keep unstaffed candidates internal to the current run. |
 
 ## 16. Changing this spec
 
@@ -280,3 +282,6 @@ Do one step at a time. Each step is gated: the AI asks questions before it start
 | Date | Change | Reason | Approved by |
 |---|---|---|---|
 | 2026-10-13 | First version | — | Ishan |
+| 2026-10-21 | Chose deterministic backtracking and removed schedule-length/load optimization from the MVP objective. | Backtracking can revisit earlier placements when needed; the MVP only needs a valid plan within the provided dates. | Pending Ishan review |
+| 2026-10-21 | Chose seating/staffing checks during scheduling, retaining unstaffed arrangements only as internal candidates while searching for a staffed alternative. | A legal seating arrangement may lack eligible teachers, so try other legal layouts before moving papers. This requires extra search; it adds no partial-plan output or storage across runs. | Pending Ishan review |
+| 2026-10-21 | Exempt a teacher from invigilating a paper when they teach every section writing it; report the exemption. | The team reports encountering this case: the teacher cannot supervise their paper without supervising their own students. The cost is an explicit exception to the own-paper requirement for that teacher-paper pair; the own-student ban remains mandatory. | Pending Ishan review |
