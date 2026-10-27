@@ -1,0 +1,7 @@
+start_date: 2026-11-02
+end_date: 2026-11-06
+exam_weekdays: [Mon, Tue, Wed, Thu, Fri]
+holidays: []
+sessions: [morning, evening]
+min_gap_days: 2
+invigilators_per_room: 2

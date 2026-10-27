@@ -1,0 +1,9 @@
+course_code,title,cohort_id,kind
+CSE2001,Data Structures & Algorithms,BT2CSE,CORE
+CSE2002,OOPS using Java,BT2CSE,CORE
+MTH2001,Discrete Mathematics,BT2CSE,ELECTIVE
+PHY2001,Semiconductor Physics,BT2CSE,ELECTIVE
+CSE2003,Data Structures & Algorithms,BT2ECOM,CORE
+ECE2001,Signals & Systems,BT2ECOM,CORE
+PHY2002,Quantum,BT2ECOM,ELECTIVE
+BIO2001,Modeling Life,BT2ECOM,ELECTIVE

@@ -1,0 +1,76 @@
+course_code,title,cohort_id,kind
+MTH2001,Linear Algebra & Differential Equations,BT2CSE,CORE
+CSE2001,Data Analysis using Python,BT2CSE,CORE
+MGT2001,Innovation & Entrepreneurship,BT2CSE,CORE
+CSE2002,Data Structures & Algorithms,BT2CSE,CORE
+CSE2003,Web Programming,BT2CSE,CORE
+ECE2001,Digital Logic Design,BT2CSE,CORE
+CSE2004,OOPS using Java,BT2CSE,CORE
+MTH2002,Discrete Mathematics,BT2CSE,ELECTIVE
+PHY2001,Semiconductor Physics,BT2CSE,ELECTIVE
+PHY2002,Quantum,BT2CSE,ELECTIVE
+BIO2001,Modeling Life,BT2CSE,ELECTIVE
+MTH2003,Linear Algebra & Differential Equations,BT2ECOM,CORE
+CSE2005,Data Analysis using Python,BT2ECOM,CORE
+MGT2002,Innovation & Entrepreneurship,BT2ECOM,CORE
+CSE2006,Data Structures & Algorithms,BT2ECOM,CORE
+CSE2007,Web Programming,BT2ECOM,CORE
+ECE2002,Digital Logic Design,BT2ECOM,CORE
+ECE2003,Signals & Systems,BT2ECOM,CORE
+ECE2004,Sensors & IoT,BT2ECOM,CORE
+MTH2004,Linear Algebra & Differential Equations,BT2ME,CORE
+CSE2008,Data Analysis using Python,BT2ME,CORE
+MGT2003,Innovation & Entrepreneurship,BT2ME,CORE
+MEC2001,Robotics & IoT,BT2ME,CORE
+MEC2002,Thermodynamics,BT2ME,CORE
+MEC2003,Engineering Materials,BT2ME,CORE
+ECE2005,Sensors & IoT,BT2ME,CORE
+CSE3001,Machine Learning,BT3CSE,CORE
+CSE3002,Computer Organization & Architecture,BT3CSE,CORE
+CSE3003,Artificial Intelligence,BT3CSE,CORE
+ECE3001,IoT,BT3CSE,CORE
+CSE3004,Coding Skills,BT3CSE,CORE
+MTH3001,Discrete Mathematics,BT3CSE,CORE
+CSE3005,Advanced Data Science,BT3CSE,ELECTIVE
+CSE3006,Big Data,BT3CSE,ELECTIVE
+CSE3007,CE&DHA,BT3CSE,ELECTIVE
+CSE3008,Security Attack & Defence,BT3CSE,ELECTIVE
+CSE3009,Applied Databases,BT3CSE,ELECTIVE
+CSE3010,Machine Learning,BT3ECOM,CORE
+CSE3011,Computer Organization & Architecture,BT3ECOM,CORE
+ECE3002,Microprocessors & Microcontrollers,BT3ECOM,CORE
+ECE3003,Digital VLSI,BT3ECOM,CORE
+CSE3012,Coding Skills,BT3ECOM,CORE
+CSE3013,Advanced Data Science,BT3ECOM,ELECTIVE
+CSE4001,Agentic AI,BT4CSE,ELECTIVE
+CSE4002,NLP,BT4CSE,ELECTIVE
+CSE4003,IDT,BT4CSE,ELECTIVE
+CSE4004,Cyber Forensics,BT4CSE,ELECTIVE
+CSE4005,Security Attack & Defence,BT4CSE,ELECTIVE
+CSE4006,SDS,BT4CSE,ELECTIVE
+CSE4007,Compiler Design,BT4ECOM,CORE
+CSE4008,Big Data,BT4ECOM,CORE
+CSE4009,Agentic AI,BT4ECOM,ELECTIVE
+CSE4010,NLP,BT4ECOM,ELECTIVE
+CSE4011,IDT,BT4ECOM,ELECTIVE
+ECE4001,CAD for VLSI,BT4ECOM,ELECTIVE
+ECE4002,Semiconductor Device Modeling,BT4ECOM,ELECTIVE
+MEC4001,Automation with PLC,BT4ME,CORE
+MEC4002,Advanced Manufacturing,BT4ME,CORE
+MEC4003,EV Technologies,BT4ME,ELECTIVE
+MEC4004,Vehicle Dynamics,BT4ME,ELECTIVE
+MEC4005,CFD,BT4ME,ELECTIVE
+MEC4006,Composite Materials,BT4ME,ELECTIVE
+MGT2004,Macroeconomics,BB2,CORE
+MGT2005,Business Statistics,BB2,CORE
+MGT2006,Business Communication,BB2,CORE
+MGT2007,Finance,BB2,ELECTIVE
+MGT2008,Marketing,BB2,ELECTIVE
+HUM2001,Design Thinking,BB2,ELECTIVE
+LAW3001,Business Law,BB3,CORE
+MGT3001,Strategic Management,BB3,CORE
+MGT3002,Operations Management,BB3,CORE
+HUM3001,Happiness,BB3,CORE
+MGT3003,Bringing Ideas to Market,BB3,ELECTIVE
+LAW3002,Ethics and Integrity in Business,BB3,ELECTIVE
+HUM3002,Organizational Behaviour,BB3,ELECTIVE

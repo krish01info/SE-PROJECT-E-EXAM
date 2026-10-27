@@ -1,0 +1,4 @@
+room_id,type,rows,seat_columns
+S01,S,6,3
+S02,S,6,3
+M01,M,7,6
