@@ -25,9 +25,14 @@ def tiny(tmp_path):
     return folder
 
 
-def run(folder, capsys):
-    """Run main.py on a folder. Returns (exit code, printed text)."""
-    code = main.main([str(folder)])
+def run(folder, capsys, output=None):
+    """Run main.py on a folder. Returns (exit code, printed text).
+    A valid folder now writes a plan, so pass output= (a temporary folder)
+    to keep it out of prototype1/output/."""
+    argv = [str(folder)]
+    if output is not None:
+        argv += ["--output", str(output)]
+    code = main.main(argv)
     return code, capsys.readouterr().out
 
 
@@ -45,8 +50,8 @@ def replace_text(path, old, new):
 # ---------------------------------------------------------------- valid input
 
 @pytest.mark.parametrize("dataset", ["tiny", "main"])
-def test_generated_datasets_are_valid(dataset, capsys):
-    code, out = run(PROTOTYPE / "data" / dataset, capsys)
+def test_generated_datasets_are_valid(dataset, tmp_path, capsys):
+    code, out = run(PROTOTYPE / "data" / dataset, capsys, output=tmp_path)
     assert code == 0, out
     assert out.startswith("Input OK")
 

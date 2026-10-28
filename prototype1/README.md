@@ -15,7 +15,7 @@ output/<timestamp>/
 
 If no plan is possible, it says why.
 
-Status: not built yet.
+Status: steps 3 (load and validate) and 4 (schedule) are built, so right now it writes only `schedule.csv`. Seating and duties come next.
 
 ## Docs
 
