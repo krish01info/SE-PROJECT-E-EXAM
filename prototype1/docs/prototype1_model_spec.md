@@ -131,8 +131,8 @@ same_paper:              # Decided. Codes that are one question paper.
 - **Decided:** exams happen only on exam days, which are within the window, an exam weekday, and not a holiday.
 - **Decided:** the gap rule. Any two papers of one student are on dates at least `min_gap_days` calendar days apart. So no student has two papers on one day or on consecutive days. Friday then Monday is fine.
 - **Decided:** every slot's papers must be seatable (§9) and staffable (§10).
-- **Open:** how the scheduler makes sure of that, whether by checking while scheduling or by retrying.
-- **Open:** the algorithm. It must be explainable (§13).
+- **Team decision (was Open):** the scheduler checks while scheduling. A slot may hold at most the seats rooms give with one paper per room (every other seat column: S 12, M 21; 594 in `main`), and the rooms that number of students needs times `invigilators_per_room` must not exceed the number of teachers. The other duty rules wait for step 6, because they depend on which room each paper is in.
+- **Team decision (was Open):** the algorithm is greedy. Papers go biggest first (ties by paper ID). Each gets the earliest exam day that keeps the gap rule with every clashing paper and has a session it fits in, and goes into the emptier of the two sessions (the first session on a tie).
 - **Open:** what makes one valid schedule better than another: a short exam period (the Phase 0 objective), even load across slots, or fewer rooms at the peak. **Default:** finding any valid schedule comes first, and a shorter period is better.
 - **Useful fact (Phase 0):** the session doesn't affect the gap rule, because morning and evening of one day are the same date. So papers can be given dates first, and morning or evening chosen afterwards to balance seats and teachers.
 
@@ -262,7 +262,7 @@ Do one step at a time. Each step is gated: the AI asks questions before it start
 | 2 | What does a room CSV cell show? | `paper_id:student_id` |
 | 3 | Can one seat column hold two papers? | No |
 | 4 | Which separation rules go in `constraints.yaml`, and what do they mean? | None until a use case exists |
-| 5 | What makes one valid schedule better than another? | A shorter exam period |
+| 5 | What makes one valid schedule better than another? | A shorter exam period. **Step 4 (2026-10-28):** the earliest-day greedy gives this; the two sessions of a day are kept balanced |
 | 6 | What happens to a teacher who teaches every section of a paper? | **Decided by the team (2026-10-22):** a duty in the same slot, in a room writing a different paper; reported if impossible (§10) |
 | 7 | How is duty fairness measured? | Even counts; PhD scholars may get fewer |
 | 8 | Are program electives in prototype1? | Yes |
@@ -281,3 +281,4 @@ Do one step at a time. Each step is gated: the AI asks questions before it start
 |---|---|---|---|
 | 2026-10-13 | First version | — | Ishan |
 | 2026-10-22 | §10 and §15 Q6: a teacher who teaches every section of a paper gets a duty in the same slot, in a room writing a different paper | The subject teacher should be present while their paper is written, so they can fix any error in it. They don't need to be in the room with their own students. Needed because the dataset has papers written by one section only (e.g. Thermodynamics, BT2ME). | Pending (Ishan, via PR) |
+| 2026-10-28 | §8: how a slot is kept seatable and staffable, and the algorithm (both were Open) | Seats: one paper per room is the spec's normal case and mixing only a fallback; on `main` all 56 papers fit by 20 Nov with no session over 594, so step 5 should not need to mix. Teachers: rooms x 2 <= teachers is cheap and must always hold; the other duty rules need rooms, which exist only after step 5. Biggest first: a big paper uses up so much of a session's 594 seats that only a few sessions can still take it, so it goes first while sessions are empty and smaller papers fill the gaps. Emptier session keeps morning and evening balanced. | Pending (Ishan, via PR) |
