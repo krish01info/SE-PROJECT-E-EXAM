@@ -8,9 +8,11 @@ Steps are from `docs/prototype1_model_spec.md` §14.
 - **Step 1, dataset design:** decisions in `docs/data_design_spec.md` §8 (2026-10-13, redone 2026-10-22).
 - **Step 2, generator:** `tools/generate_data.py` writes `data/tiny` and `data/main`. Checked by Krish (Modeling Life: 40 students, 1 teacher, as the 150 rule says). Committed on branch `krish/generator`.
 
+- **Step 3, load and validate:** `main.py`, `loader.py`, `validate.py`, `tests/test_validate.py`. Built on branch `krish/load-validate` (from `krish/generator`). Waiting for Krish's check (break a file, read the error).
+
 ## Next
 
-- Step 3: load and validate. `main.py` reads an input folder and lists every problem with file, row and rule, then exits 1.
+- Step 3 check, then commit. Then step 4: schedule (model spec §8), writes `schedule.csv`.
 
 ## Decisions made in step 2 (2026-10-28)
 
@@ -19,6 +21,14 @@ Steps are from `docs/prototype1_model_spec.md` §14.
 - BT3ECOM has no Big Data or CE&DHA codes. Reason: every BT3ECOM student takes ADS, so nobody would write them.
 - `tiny`: 16 students (8 per section). Reason: a broken tool fails on 8 or 16 alike.
 - One branch per task: `krish/generator`. Notes live in `prototype1/` because top-level files are off limits.
+
+## Decisions made in step 3 (2026-10-28)
+
+- Two stages (option (a)): stage 1 checks files exist, are readable, headers are right, rows have the right number of values, YAML is valid. If stage 1 fails, stage 2 (the data rules) does not run. Reason (Krish): stops floods of fake follow-on errors from one broken file; a dependency list per check (option (c)) is hard to explain at evals for little gain.
+- Errors are grouped by rule with a count above each group, but every problem is still listed with file and row. Reason (Krish): readable screen, and it stays inside model spec §12 and data design spec §3, so no spec change.
+- A course code with no registrations, and a teaching row for a section with no student writing that code, are errors (exit 1), as the spec says. Reason (Krish): no students means no exam can be held.
+- Two modules: `loader.py` only reads, `validate.py` only checks. Reason (Krish): easier to change later, and each has its own job.
+- Row numbers are file line numbers with the header as row 1, as a spreadsheet shows them.
 
 ## Generator choices (Default level, open to change)
 

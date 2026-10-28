@@ -1,7 +1,7 @@
 # Start here
 
-**Current state:** step 2 (generator) is done and committed on branch `krish/generator`, in two commits: the spec rows, then the generator. `python tools/generate_data.py` (run from `prototype1/`) writes `data/tiny` and `data/main`, and all checks pass.
+**Current state:** step 3 (load and validate) is written on branch `krish/load-validate`, made from `krish/generator`. Not committed yet: it waits for Krish's step check. `python main.py data/tiny` and `python main.py data/main` both print "Input OK" and exit 0; `python -m pytest tests` passes (18 tests).
 
-**Open problems:** see "Open points to discuss" in `PROGRESS.md`.
+**Open problems:** see "Open points to discuss" in `PROGRESS.md`. `krish/generator` still needs its PR into `main`.
 
-**Exact next step:** Krish pushes `krish/generator` and opens a PR into `main`. Then step 3, load and validate (model spec §14): `main.py` reads an input folder and lists every problem with file, row and rule, then exits 1. Start it with the step gate from `repo_instructions.md` §3: say the plan, ask 1–3 questions, wait for answers.
+**Exact next step:** Krish breaks a file on purpose, runs `python main.py <folder>`, and reads the error (model spec §14 step 3 check). Then commit step 3. Then step 4, schedule (model spec §8), starting with the step gate from `repo_instructions.md` §3.
