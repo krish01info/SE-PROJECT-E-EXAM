@@ -18,6 +18,11 @@ How it works (decided in step 4, 2026-10-28):
                number of teachers. (2026-11-03, Krish: counting seats alone
                let 9 Nov evening take 590 students that one paper per room
                could not seat.)
+               Last, the duty rule is ASKED (duties.py): every teacher of
+               every paper in the session must have a room they may take
+               for their paper. (2026-11-03, Krish: check before booking,
+               so the error is stopped early; e.g. HUM2001 alone in a slot
+               left its teacher no room.)
   5. Place.    Papers go biggest first (most students; ties by paper ID).
                Each paper gets the EARLIEST exam day that is at least
                min_gap_days away from every paper it clashes with and has
@@ -31,6 +36,7 @@ never cause a clash. It only balances seats between morning and evening.
 import datetime
 from dataclasses import dataclass, field
 
+import duties
 import seat
 from errors import NoPlan
 
@@ -127,18 +133,45 @@ def one_paper_seats(room):
     return int(room["rows"]) * columns_used
 
 
-def session_fits(papers, rooms, seat_limit, teacher_count, per_room):
-    """Can one session hold these papers? Three checks, cheapest first:
-    the students fit in the one-paper-per-room seats, step 5 can really seat
-    them, and there are enough teachers for the rooms it opens."""
+def session_problem(papers, rooms, limits):
+    """Can one session hold these papers? Returns None if yes, otherwise
+    the first check that fails: "seats" (more students than the one-paper
+    seats, or step 5 can't seat them), "teachers" (too few teachers for the
+    rooms) or "duty room" (a teacher has no room for their paper).
+    `limits` is the dict from session_limits()."""
     students = sum(len(paper.students) for paper in papers)
-    if students > seat_limit:
-        return False
+    if students > limits["seat_limit"]:
+        return "seats"
     try:
-        plans = seat.seat_slot(papers, rooms)
+        plans = seat.seat_slot(papers, rooms, limits["section_of"])
     except NoPlan:
-        return False
-    return len(plans) * per_room <= teacher_count
+        return "seats"
+    if len(plans) * limits["per_room"] > limits["teacher_count"]:
+        return "teachers"
+    if duties.teachers_without_room(papers, plans, limits["teaching"],
+                                    limits["rank_of"], limits["section_of"]):
+        return "duty room"
+    return None
+
+
+def session_fits(papers, rooms, limits):
+    """True if session_problem() finds nothing wrong."""
+    return session_problem(papers, rooms, limits) is None
+
+
+def session_limits(data, papers):
+    """Everything session_problem() needs that is the same for every
+    session: built once per run."""
+    rooms = data["rooms"]
+    return {
+        "seat_limit": sum(one_paper_seats(room) for room in rooms),
+        "per_room": data["settings"]["invigilators_per_room"],
+        "teacher_count": len(data["teachers"]),
+        "teaching": duties.build_teaching(data, papers),
+        "rank_of": {teacher["teacher_id"]: teacher["rank"]
+                    for teacher in data["teachers"]},
+        "section_of": duties.section_of_student(data),
+    }
 
 
 # ---------------------------------------------------------------- 5. place
@@ -149,12 +182,10 @@ def make_schedule(data):
     settings = data["settings"]
     sessions = [str(name) for name in settings["sessions"]]
     gap = settings["min_gap_days"]
-    per_room = settings["invigilators_per_room"]
     rooms = data["rooms"]
-    teacher_count = len(data["teachers"])
-    seat_limit = sum(one_paper_seats(room) for room in rooms)
 
     papers = build_papers(data)
+    limits = session_limits(data, papers)
     clashes = build_clashes(papers)
     days = exam_days(settings)
     if not days:
@@ -168,44 +199,87 @@ def make_schedule(data):
     papers_in = {(day, s): [] for day in days for s in sessions}
     placements = []
 
+    def too_close(paper, day):
+        return any(abs((day - date_of[other]).days) < gap
+                   for other in clashes[paper.paper_id] if other in date_of)
+
+    def problem(slot, extra):
+        return session_problem(papers_in[slot] + extra, rooms, limits)
+
+    def place(paper, slot):
+        date_of[paper.paper_id] = slot[0]
+        load[slot] += len(paper.students)
+        papers_in[slot].append(paper)
+        placements.append(Placement(slot[0], slot[1], paper))
+
     order = sorted(papers.values(),
                    key=lambda paper: (-len(paper.students), paper.paper_id))
     for paper in order:
         size = len(paper.students)
-        blocked_by_gap = 0
-        blocked_by_room = 0
+        free_days = [day for day in days if not too_close(paper, day)]
+        blocked_by_gap = len(days) - len(free_days)
+
+        # 1. A session waiting for another paper comes first, if this paper
+        #    fixes it (Krish: waiting, because we have to take the paper).
+        waiting = [(day, s) for day in free_days for s in sessions
+                   if papers_in[(day, s)]
+                   and problem((day, s), []) == "duty room"
+                   and problem((day, s), [paper]) is None]
+        if waiting:
+            place(paper, waiting[0])
+            continue
+
+        # 2. Otherwise the earliest day with a session it fits in, the
+        #    emptier one first. If it fits nowhere only because it would be
+        #    alone and a teacher needs another paper's room, it may wait in
+        #    an empty session.
+        blocked = {"seats": 0, "teachers": 0, "duty room": 0}
         placed = False
-        for day in days:
-            too_close = any(abs((day - date_of[other]).days) < gap
-                            for other in clashes[paper.paper_id]
-                            if other in date_of)
-            if too_close:
-                blocked_by_gap += 1
-                continue
-            fitting = [s for s in sessions
-                       if session_fits(papers_in[(day, s)] + [paper], rooms,
-                                       seat_limit, teacher_count, per_room)]
-            if not fitting:
-                blocked_by_room += 1
-                continue
-            # Emptier session first; min() keeps the first one on a tie.
-            session = min(fitting, key=lambda s: load[(day, s)])
-            date_of[paper.paper_id] = day
-            load[(day, session)] += size
-            papers_in[(day, session)].append(paper)
-            placements.append(Placement(day, session, paper))
-            placed = True
-            break
+        for day in free_days:
+            problems = {s: problem((day, s), [paper]) for s in sessions}
+            fitting = [s for s in sessions if problems[s] is None]
+            if fitting:
+                # min() keeps the first session (morning) on a tie.
+                place(paper, (day, min(fitting, key=lambda s: load[(day, s)])))
+                placed = True
+                break
+            can_wait = [s for s in sessions
+                        if problems[s] == "duty room" and not papers_in[(day, s)]]
+            if can_wait:
+                place(paper, (day, can_wait[0]))
+                placed = True
+                break
+            # Count the day once, under the first session's problem.
+            blocked[problems[sessions[0]]] += 1
         if not placed:
             raise NoPlan(
                 "No plan possible.\n"
                 f"Paper: {paper.paper_id} ({size} students)\n"
                 f"Of {len(days)} exam days, {blocked_by_gap} break the gap "
-                f"rule (a clashing paper is less than {gap} days away) and "
-                f"{blocked_by_room} have no session with room for it "
-                f"(at most {seat_limit} seats, every student seated one "
-                f"paper per room or mixed where needed, and "
-                f"{teacher_count} teachers per session).")
+                f"rule (a clashing paper is less than {gap} days away), "
+                f"{blocked['seats']} have no session with seats for it "
+                f"(at most {limits['seat_limit']} seats, seated one paper "
+                f"per room or mixed where needed), {blocked['teachers']} "
+                f"have too few teachers ({limits['teacher_count']}), and "
+                f"{blocked['duty room']} leave a teacher of a paper with no "
+                f"room to invigilate.")
+
+    # 3. Last check: a session still waiting for another paper means no plan.
+    for slot in sorted(papers_in, key=lambda s: (s[0], sessions.index(s[1]))):
+        if papers_in[slot] and problem(slot, []) == "duty room":
+            plans = seat.seat_slot(papers_in[slot], rooms, limits["section_of"])
+            missing = duties.teachers_without_room(
+                papers_in[slot], plans, limits["teaching"], limits["rank_of"],
+                limits["section_of"])
+            names = ", ".join(f"{teacher} ({paper_id})"
+                              for teacher, paper_id in missing)
+            raise NoPlan(
+                "No plan possible.\n"
+                "Rule: duty room\n"
+                f"Slot: {slot[0]} {slot[1]}\n"
+                f"Papers: {', '.join(p.paper_id for p in papers_in[slot])}. "
+                f"No other paper could join this slot, so these teachers "
+                f"have no room they may invigilate for their paper: {names}.")
 
     placements.sort(key=lambda p: (p.date, sessions.index(p.session),
                                    p.paper.paper_id))

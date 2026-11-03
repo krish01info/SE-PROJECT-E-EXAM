@@ -19,6 +19,7 @@ import datetime
 import sys
 from pathlib import Path
 
+import duties
 import loader
 import schedule
 import seat
@@ -119,7 +120,8 @@ def main(argv=None):
     # Step 5: students to seats. Done before anything is written, so a
     # failed seating leaves no half-written plan.
     try:
-        seating = seat.make_seating(placements, data["rooms"])
+        seating = seat.make_seating(placements, data["rooms"],
+                                    duties.section_of_student(data))
     except schedule.NoPlan as reason:
         print(reason)
         return 2

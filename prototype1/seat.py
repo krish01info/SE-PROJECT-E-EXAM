@@ -14,6 +14,11 @@ our university does it, and two papers in a room only when needed):
               the odd seat columns only (1, 3, 5, ...), so no two neighbouring
               columns hold the same paper. S holds 12, M holds 21.
               If every paper fits this way, that is the plan.
+              Sections: if starting each section of a paper in a new room
+              needs no more rooms for that paper than filling straight on,
+              each section starts in a new room. (2026-11-03, Krish: in
+              real life we can't change the data, so the seating must give
+              each section's teacher a room without their own students.)
   3. Mix.     Only if the rooms run out:
               a. Each paper first fills, alone, the rooms it fills COMPLETELY.
                  Its last students, too few to fill a room, are its "leftover".
@@ -105,17 +110,52 @@ def paper_queues(papers):
     return queues
 
 
-def seat_alone(papers, rooms):
+def section_runs(students, section_of):
+    """Split a sorted student list into runs of one section each, in order.
+    With no section_of, the whole list is one run."""
+    if not section_of:
+        return [list(students)]
+    runs = []
+    for student in students:
+        if runs and section_of[runs[-1][-1]] == section_of[student]:
+            runs[-1].append(student)
+        else:
+            runs.append([student])
+    return runs
+
+
+def rooms_used(groups, rooms, first_index):
+    """How many rooms, from rooms[first_index] on, the groups of students
+    need if each group starts in a new room, alone. None if they run out."""
+    index = first_index
+    for group in groups:
+        left = len(group)
+        while left > 0:
+            if index == len(rooms):
+                return None
+            left -= alone_seats(rooms[index])
+            index += 1
+    return index - first_index
+
+
+def seat_alone(papers, rooms, section_of=None):
     """Point 2: one paper per room. Returns the RoomPlans, or None if the
-    rooms run out."""
+    rooms run out. With section_of, a paper's sections each start in a new
+    room when that needs no extra room for the paper."""
     plans = []
     room_index = 0
     for paper_id, students in paper_queues(papers):
-        while students:
-            if room_index == len(rooms):
-                return None
-            plans.append(seat_room(rooms[room_index], [[paper_id, students]]))
-            room_index += 1
+        runs = section_runs(students, section_of)
+        straight = rooms_used([students], rooms, room_index)
+        by_section = rooms_used(runs, rooms, room_index)
+        if straight is None:
+            return None
+        groups = runs if by_section == straight else [students]
+        for group in groups:
+            while group:
+                plans.append(seat_room(rooms[room_index],
+                                       [[paper_id, group]]))
+                room_index += 1
     return plans
 
 
@@ -162,11 +202,12 @@ def seat_with_mixing(papers, rooms):
     return plans, unseated
 
 
-def seat_slot(papers, rooms):
+def seat_slot(papers, rooms, section_of=None):
     """Seat one slot. `papers` are the schedule.Paper objects written in it.
-    Returns a list of RoomPlans, only for rooms in use, in rooms.csv order.
-    Raises NoPlan if the rooms run out even with mixing."""
-    plans = seat_alone(papers, rooms)
+    `section_of` is {student_id: section_id} (optional; tests without it get
+    no section rule). Returns a list of RoomPlans, only for rooms in use, in
+    rooms.csv order. Raises NoPlan if the rooms run out even with mixing."""
+    plans = seat_alone(papers, rooms, section_of)
     if plans is not None:
         return plans
 
@@ -185,7 +226,7 @@ def seat_slot(papers, rooms):
     return plans
 
 
-def make_seating(placements, rooms):
+def make_seating(placements, rooms, section_of=None):
     """Returns {(date, session): [RoomPlan, ...]}, slots in schedule order.
     Raises NoPlan (with the slot named) if any slot cannot be seated."""
     papers_of_slot = {}
@@ -196,7 +237,7 @@ def make_seating(placements, rooms):
     seating = {}
     for (day, session), papers in papers_of_slot.items():
         try:
-            seating[(day, session)] = seat_slot(papers, rooms)
+            seating[(day, session)] = seat_slot(papers, rooms, section_of)
         except NoPlan as reason:
             first_line, rest = str(reason).split("\n", 1)
             raise NoPlan(f"{first_line}\nSlot: {day} {session}\n{rest}")

@@ -224,3 +224,25 @@ def test_main_writes_one_csv_per_room_in_use(tmp_path, capsys):
     assert len(rows) == 6 and all(len(row) == 3 for row in rows)
     assert rows[0][0] == "CSE2001:BT2CSE0001"     # no header row
     assert rows[0][1] == ""                        # empty seat is blank
+
+
+# ------------------------------------------------- sections in new rooms
+
+def test_each_section_starts_a_new_room_when_it_costs_no_extra_room():
+    # A has 8 students of section X (A01..A08) and 8 of section Y
+    # (A09..A16). Straight on: S01 12 (X and Y mixed) + S02 4 = 2 rooms.
+    # By section: S01 8 X, S02 8 Y = also 2 rooms, so by section.
+    section_of = {f"A{n:02d}": ("X" if n <= 8 else "Y") for n in range(1, 17)}
+    plans = seat.seat_slot([paper("A", 16)], [S_ROOM, S02], section_of)
+    first = {cell[1] for row in plans[0].grid for cell in row if cell}
+    second = {cell[1] for row in plans[1].grid for cell in row if cell}
+    assert first == {f"A{n:02d}" for n in range(1, 9)}
+    assert second == {f"A{n:02d}" for n in range(9, 17)}
+
+
+def test_sections_stay_together_when_a_new_room_would_cost_a_room():
+    # 13 of X and 11 of Y. Straight on: 24 = S01 + S02 (2 rooms).
+    # By section: X needs 2 rooms, Y 1 = 3 rooms. So straight on.
+    section_of = {f"A{n:02d}": ("X" if n <= 13 else "Y") for n in range(1, 25)}
+    plans = seat.seat_slot([paper("A", 24)], [S_ROOM, S02, S03], section_of)
+    assert [p.room_id for p in plans] == ["S01", "S02"]
