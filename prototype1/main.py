@@ -5,12 +5,12 @@ Run from prototype1/:
     python main.py data/tiny
 
 Exit codes (model spec section 4):
-    0  a plan was written (right now: schedule.csv only)
+    0  a plan was written (right now: schedule.csv and the room CSVs)
     1  the input is invalid; every problem is printed
     2  no plan is possible; the reason is printed and nothing is written
 
-Built so far: step 3 (load and validate) and step 4 (schedule).
-Seating (step 5) and duties (step 6) come next.
+Built so far: step 3 (load and validate), step 4 (schedule) and
+step 5 (seat). Duties (step 6) come next.
 """
 
 import argparse
@@ -21,6 +21,7 @@ from pathlib import Path
 
 import loader
 import schedule
+import seat
 import validate
 
 SCHEDULE_COLUMNS = ["date", "session", "paper_id", "course_codes", "students"]
@@ -62,6 +63,24 @@ def write_schedule(placements, path):
                              len(paper.students)])
 
 
+def write_seating(seating, folder):
+    """One CSV per room in use per slot (model spec section 11):
+    daywise_seating_plans/<date>/<session>/<room_id>.csv. No header row:
+    each CSV row is a row of seats, front first. Returns the file count."""
+    count = 0
+    for (day, session), room_plans in seating.items():
+        slot_folder = folder / "daywise_seating_plans" / day.isoformat() / session
+        slot_folder.mkdir(parents=True, exist_ok=True)
+        for room_plan in room_plans:
+            path = slot_folder / f"{room_plan.room_id}.csv"
+            with open(path, "w", newline="", encoding="utf-8") as file:
+                writer = csv.writer(file)
+                for row in room_plan.grid:
+                    writer.writerow([seat.cell_text(cell) for cell in row])
+            count += 1
+    return count
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(
         description="Turn an input folder into an exam plan.")
@@ -97,8 +116,17 @@ def main(argv=None):
         print("No papers to schedule: courses.csv has no course codes.")
         return 2
 
+    # Step 5: students to seats. Done before anything is written, so a
+    # failed seating leaves no half-written plan.
+    try:
+        seating = seat.make_seating(placements, data["rooms"])
+    except schedule.NoPlan as reason:
+        print(reason)
+        return 2
+
     folder = make_output_folder(args.output)
     write_schedule(placements, folder / "schedule.csv")
+    room_files = write_seating(seating, folder)
 
     days = sorted({placement.date for placement in placements})
     print(f"Scheduled {len(placements)} papers on {len(days)} days, "
@@ -108,8 +136,14 @@ def main(argv=None):
         day, session, students, seat_limit = fullest
         print(f"Fullest session: {day} {session}, {students} of {seat_limit} "
               f"seats ({seat_limit - students} left).")
-    print(f"Wrote {folder / 'schedule.csv'}")
-    print("Seating (step 5) and duties (step 6) are not built yet.")
+    busiest = max(seating.items(), key=lambda item: len(item[1]))
+    two_paper = sum(1 for plans in seating.values()
+                    for plan in plans if len(plan.papers) == 2)
+    print(f"Seating: {room_files} room files ({two_paper} with two papers). "
+          f"Most rooms in one slot: {len(busiest[1])} of {len(data['rooms'])}"
+          f" ({busiest[0][0]} {busiest[0][1]}).")
+    print(f"Wrote {folder}")
+    print("Duties (step 6) are not built yet.")
     return 0
 
 
