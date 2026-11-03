@@ -17,6 +17,8 @@ Steps are from `docs/prototype1_model_spec.md` §14.
 
 - **Step 6, duties (2026-11-03), on `krish/duties`:** `duties.make_duties()`, 12 new tests in `tests/test_duties.py`; `main.py` now also writes `duties.csv`. `main`: 1,192 duties, each regular teacher 15 or 16, PhD scholars 0, 418 teacher-days with both shifts (about 415 is the least possible). 75 tests pass. Checked by Krish (T071 teaches all of HUM2001, 13 Nov morning, S01–S04: he gets S05, MEC4003, same session, not with his own students). Committed: spec, then code.
 
+- **Step 7, no plan (2026-11-03), on `krish/duties`:** every no-plan stop goes through one path in `main.py`: it prints the reason, writes the same text to `why.txt` (the only file in the new timestamped folder) and exits 2. Every message names its rule. Two cheap checks run before scheduling (`schedule.check_before_scheduling()`): a student with more papers than the window can hold (`Rule: gap`), and a paper bigger than all rooms together (`Rule: seats`). 7 impossible datasets in `data/impossible/` (see its `README.md`); 12 new tests in `tests/test_no_plan.py`. `tiny` and `main` give the same plans as before. 87 tests pass. Checked by Krish (`duty_room_full`: T006 teaches those students, so can't sit in S01; S02, the only other room, has one place and T005 takes it). Committed: code, then notes.
+
 ## Next
 
 Branch `krish/duties` (from `krish/seat`, made 2026-11-03). Everything below goes on it, one commit per part, each checked by Krish first:
@@ -25,7 +27,9 @@ Branch `krish/duties` (from `krish/seat`, made 2026-11-03). Everything below goe
 2. ~~Fix step 4~~ done (see above).
 3. ~~Step 6: duties~~ done (see above).
 
-Next step: step 7, no plan (model spec §14): the reasons from §12, `why.txt`, one impossible dataset per reason.
+4. ~~Step 7: no plan~~ done (see above).
+
+Next step: step 8, checker (model spec §14).
 
 ## Decisions made in step 2 (2026-10-28)
 
@@ -86,6 +90,14 @@ Next step: step 7, no plan (model spec §14): the reasons from §12, `why.txt`, 
 - **Order for every other place (option i):** no duty yet that day first, then fewest duties so far, then teacher ID. Reason (Krish): a teacher can't do a full day of invigilation, they also check copies and have other work. A strict one shift a day doesn't fit `main` (see "To work on later" below), so for now it is a preference.
 - **Two own papers in one slot:** one duty must count for both; if no room does, no plan (Rule: duty room). Not seen on `main` or `tiny`.
 - **No plan messages:** "Rule: duty room" when an own-paper duty can't be placed, "Rule: duties" when a room can't get its teachers, with the slot, the short rooms and the counts. `why.txt` is step 7.
+
+## Decisions made in step 7 (2026-11-03)
+
+- **A "no day fits" message lists every reason with its count** (gap days, then sessions blocked by seats, teachers, duty room). Reason (Krish): it gives a better understanding. Rule name: `paper placement`. Counts are now per session, not only the first session of a day.
+- **Impossible datasets are real folders** in `data/impossible/`, copies of `tiny` with one thing broken. Reason (Krish): easy to use, and he can tweak them. Cost: if `tiny` changes, they must be re-checked by hand.
+- **Backup checks stay** (no dataset, tested directly): `seat.py` running out of rooms, one own paper with no room, two own papers with no shared room, empty `courses.csv`. Reason (Krish): to show we thought of these even if they never happen. Listed with reasons in `data/impossible/README.md`.
+- Found: step 4 checks each own paper on its own, so "two own papers in one slot, no one room for both" can still reach step 6. `tiny` has too few sections to show it. Not changed; a possible later fix is for step 4 to check both together.
+- Cheap check "more students than seats" is done per paper: one paper alone can use at most the one-paper seats of all rooms (594 in `main`).
 
 ## Generator choices (Default level, open to change)
 
