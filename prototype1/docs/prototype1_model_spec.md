@@ -153,9 +153,11 @@ same_paper:              # Decided. Codes that are one question paper.
 
 **Other rules:**
 
-- **Decided:** one paper per room where possible. Papers are mixed only when rooms run out.
-  - A room holding one paper uses alternate columns: S holds 12, M holds 21.
-  - Two papers alternating fill the room: S holds 18, M holds 42.
+- **Decided (changed 2026-11-03, pending Ishan, see change log):** two papers per room, in alternating seat columns. A room never holds a third paper.
+  - The two papers with the most students start together, and a pair stays together room after room. When one paper is finished, its seats left in that room stay empty, and from the next room on the other paper gets a new partner: the paper with the most students still left.
+  - In each room the paper with more students left takes the odd seat columns (1, 3, 5, ...), the other the even ones: S holds 12 + 6, M holds 21 + 21.
+  - Only when no other paper is left does a paper sit alone, in alternate columns: S holds 12, M holds 21.
+  - Before 2026-11-03 this rule was: one paper per room where possible, papers mixed only when rooms run out.
 - **Decided:** course codes in one `same_paper` group are one paper here.
 - **Decided:** every student writing in a slot gets exactly one seat, and a seat holds at most one student.
 - **Decided (Phase 0):** each paper's students are seated in roll order, in contiguous chunks.
@@ -282,3 +284,4 @@ Do one step at a time. Each step is gated: the AI asks questions before it start
 | 2026-10-13 | First version | — | Ishan |
 | 2026-10-22 | §10 and §15 Q6: a teacher who teaches every section of a paper gets a duty in the same slot, in a room writing a different paper | The subject teacher should be present while their paper is written, so they can fix any error in it. They don't need to be in the room with their own students. Needed because the dataset has papers written by one section only (e.g. Thermodynamics, BT2ME). | Pending (Ishan, via PR) |
 | 2026-10-28 | §8: how a slot is kept seatable and staffable, and the algorithm (both were Open) | Seats: one paper per room is the spec's normal case and mixing only a fallback; on `main` all 56 papers fit by 20 Nov with no session over 594, so step 5 should not need to mix. Teachers: rooms x 2 <= teachers is cheap and must always hold; the other duty rules need rooms, which exist only after step 5. Biggest first: a big paper uses up so much of a session's 594 seats that only a few sessions can still take it, so it goes first while sessions are empty and smaller papers fill the gaps. Emptier session keeps morning and evening balanced. | Pending (Ishan, via PR) |
+| 2026-11-03 | §9: two papers per room in alternating columns, never three; a pair stays together until one paper is finished (was Decided: one paper per room, mixing only when rooms run out) | Problem: with one paper per room in `rooms.csv` order, the last room of each paper is part empty, and on `main` 4 sessions (9 and 12 Nov, both sessions) run out of rooms; 9 Nov evening has 590 students for 594 seats. With two papers per room every session fits, and the whole exam needs 481 rooms instead of 599 (counted the old way), so about 236 fewer duties. Krish: fill the empty columns with a second paper so no room is left half empty, fewer rooms are used and fewer teachers are needed; no student sits next to the same paper; never a third paper in a room; when only one paper is left it goes one paper per room, because that is the only thing we can do. Cost: most rooms hold two question papers, so the invigilator hands out two; sessions with one paper don't change; in step 6 each room has the students of two papers whose teachers must not invigilate it. §8's 594-seat limit is kept as a safe limit. If not approved, step 5 is redone. | Pending (Ishan, via PR) |
