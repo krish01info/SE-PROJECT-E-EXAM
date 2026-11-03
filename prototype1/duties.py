@@ -183,6 +183,13 @@ def own_paper_rooms(teacher_id, teaches, plans, section_of, day, session):
     for paper_id in own_papers:
         rooms &= set(paper_duty_rooms(paper_id, teaches, plans, section_of))
     if not rooms:
+        # Backup (step 7): with one own paper this never happens through
+        # main.py, because step 4 checks every paper's teachers before
+        # booking. With two own papers it can happen (step 4 checks each
+        # paper on its own, not both together), but only when both papers
+        # have a section the teacher doesn't teach, in different rooms; tiny
+        # has too few sections for that. Both are tested in
+        # tests/test_duties.py.
         if len(own_papers) == 1:
             text = (f"{teacher_id} needs a duty for {own_papers[0]}, but every "
                     f"room in this slot has their own students.")
@@ -224,8 +231,8 @@ def staff_slot(day, session, plans, teaching, regulars, phds, per_room,
         if not place_teacher(teacher_id, state, may_sit, set()):
             rooms = ", ".join(r for r in state.order if r in must[teacher_id])
             raise no_plan("duty room", day, session,
-                          f"{teacher_id} needs a duty in one of {rooms} for "
-                          f"their own paper, but those rooms are full of "
+                          f"{teacher_id} needs a duty for their own paper in "
+                          f"one of these rooms: {rooms}. They are full of "
                           f"other teachers who can't sit anywhere else.")
 
     # 2. Every other place: regular teachers best first, PhD scholars last.

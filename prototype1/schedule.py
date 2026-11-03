@@ -174,6 +174,62 @@ def session_limits(data, papers):
     }
 
 
+# ---------------------------------------------------------------- 0. cheap checks
+
+def most_papers_in_window(days, gap):
+    """The most papers one student can write on these exam days, with at
+    least `gap` days between any two: take the first day, then the first
+    day at least `gap` days later, and so on."""
+    count = 0
+    last = None
+    for day in days:
+        if last is None or (day - last).days >= gap:
+            count += 1
+            last = day
+    return count
+
+
+def check_before_scheduling(papers, days, gap, seat_limit, room_count):
+    """Cheap checks run before scheduling (model spec section 12). Each one
+    shows straight away that no plan can exist. Raises NoPlan."""
+    # 1. A student with more papers than the window can hold.
+    papers_of = {}
+    for paper in papers.values():
+        for student in paper.students:
+            papers_of.setdefault(student, []).append(paper.paper_id)
+    most = most_papers_in_window(days, gap)
+    too_many = sorted(student for student, paper_ids in papers_of.items()
+                      if len(paper_ids) > most)
+    if too_many:
+        first = too_many[0]
+        names = ", ".join(sorted(papers_of[first]))
+        raise NoPlan(
+            "No plan possible.\n"
+            "Rule: gap\n"
+            f"Student: {first} writes {len(papers_of[first])} papers "
+            f"({names}).\n"
+            f"The window has {len(days)} exam days ({days[0]} to "
+            f"{days[-1]}). With at least {gap} days between two papers of a "
+            f"student, at most {most} papers fit.\n"
+            f"Students with more papers than that: {len(too_many)}.")
+
+    # 2. A paper bigger than all the rooms together, one paper per room.
+    #    A paper alone can't use neighbouring columns, so this is the most
+    #    seats it can ever get in one session.
+    if papers:
+        biggest = max(papers.values(),
+                      key=lambda paper: (len(paper.students), paper.paper_id))
+        if len(biggest.students) > seat_limit:
+            raise NoPlan(
+                "No plan possible.\n"
+                "Rule: seats\n"
+                f"Paper: {biggest.paper_id} ({len(biggest.students)} "
+                f"students)\n"
+                f"All {room_count} rooms together give {seat_limit} seats to "
+                f"one paper (every other seat column), so no session can "
+                f"seat it.")
+
+
 # ---------------------------------------------------------------- 5. place
 
 def make_schedule(data):
@@ -193,6 +249,8 @@ def make_schedule(data):
                      "Rule: exam days\n"
                      "settings.yaml gives no exam day: check the window, "
                      "exam_weekdays and holidays.")
+    check_before_scheduling(papers, days, gap, limits["seat_limit"],
+                            len(rooms))
 
     date_of = {}                                    # paper_id -> date
     load = {(day, s): 0 for day in days for s in sessions}   # students
@@ -249,20 +307,29 @@ def make_schedule(data):
                 place(paper, (day, can_wait[0]))
                 placed = True
                 break
-            # Count the day once, under the first session's problem.
-            blocked[problems[sessions[0]]] += 1
+            # Count every session of the day under its own problem.
+            for s in sessions:
+                blocked[problems[s]] += 1
         if not placed:
+            open_days = len(free_days)
             raise NoPlan(
                 "No plan possible.\n"
+                "Rule: paper placement\n"
                 f"Paper: {paper.paper_id} ({size} students)\n"
-                f"Of {len(days)} exam days, {blocked_by_gap} break the gap "
-                f"rule (a clashing paper is less than {gap} days away), "
-                f"{blocked['seats']} have no session with seats for it "
-                f"(at most {limits['seat_limit']} seats, seated one paper "
-                f"per room or mixed where needed), {blocked['teachers']} "
-                f"have too few teachers ({limits['teacher_count']}), and "
-                f"{blocked['duty room']} leave a teacher of a paper with no "
-                f"room to invigilate.")
+                f"No exam day can take it. Every reason, of {len(days)} "
+                f"exam days:\n"
+                f"- gap rule: {blocked_by_gap} days are less than {gap} days "
+                f"from a paper that shares students with it\n"
+                f"- on the other {open_days} days "
+                f"({open_days * len(sessions)} sessions):\n"
+                f"  - seats: {blocked['seats']} sessions have no seats left "
+                f"for it (at most {limits['seat_limit']} seats, one paper per "
+                f"room, two in a room only when rooms run out)\n"
+                f"  - teachers: {blocked['teachers']} sessions would need more "
+                f"teachers than the {limits['teacher_count']} there are "
+                f"({limits['per_room']} per room)\n"
+                f"  - duty room: {blocked['duty room']} sessions would leave a "
+                f"teacher of a paper with no room to invigilate")
 
     # 3. Last check: a session still waiting for another paper means no plan.
     for slot in sorted(papers_in, key=lambda s: (s[0], sessions.index(s[1]))):

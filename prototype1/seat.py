@@ -215,6 +215,9 @@ def seat_slot(papers, rooms, section_of=None):
     if unseated:
         total = sum(len(paper.students) for paper in papers)
         missing = sum(len(students) for students in unseated.values())
+        # Backup (step 7): through main.py this never happens, because step 4
+        # asks seat_slot() before booking a session. Kept so seat_slot() is
+        # safe on its own; tested in tests/test_seat.py.
         names = ", ".join(f"{paper_id} ({len(students)})"
                           for paper_id, students in sorted(unseated.items()))
         raise NoPlan(

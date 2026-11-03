@@ -7,10 +7,11 @@ Run from prototype1/:
 Exit codes (model spec section 4):
     0  a plan was written: schedule.csv, the room CSVs and duties.csv
     1  the input is invalid; every problem is printed
-    2  no plan is possible; the reason is printed and nothing is written
+    2  no plan is possible; the reason is printed and written to why.txt,
+       the only file in the new output folder (model spec section 12)
 
 Built so far: step 3 (load and validate), step 4 (schedule), step 5
-(seat) and step 6 (duties).
+(seat), step 6 (duties) and step 7 (no plan: why.txt).
 """
 
 import argparse
@@ -24,6 +25,7 @@ import loader
 import schedule
 import seat
 import validate
+from errors import NoPlan
 
 SCHEDULE_COLUMNS = ["date", "session", "paper_id", "course_codes", "students"]
 DUTY_COLUMNS = ["date", "session", "room_id", "teacher_id"]
@@ -50,6 +52,17 @@ def make_output_folder(output_root):
         number += 1
     folder.mkdir(parents=True)
     return folder
+
+
+def write_why(reason, output_root):
+    """No plan (model spec section 12): print the reason and write the same
+    text to why.txt in a new timestamped folder. Nothing else is written,
+    so there is never a half plan. Returns exit code 2."""
+    folder = make_output_folder(output_root)
+    (folder / "why.txt").write_text(reason + "\n", encoding="utf-8")
+    print(reason)
+    print(f"Wrote {folder / 'why.txt'}")
+    return 2
 
 
 def write_schedule(placements, path):
@@ -117,33 +130,27 @@ def main(argv=None):
         return 1
     print(summary(data))
 
-    # Step 4: papers to dates and sessions.
+    # Steps 4, 5 and 6 all run before anything is written. If any of them
+    # finds that no plan is possible, the reason goes to why.txt.
     try:
+        # Step 4: papers to dates and sessions.
         placements = schedule.make_schedule(data)
-    except schedule.NoPlan as reason:
-        print(reason)
-        return 2
+        if not placements:
+            # Backup: validation already stops an empty courses.csv.
+            raise NoPlan("No plan possible.\n"
+                         "Rule: papers\n"
+                         "courses.csv has no course codes, so there is "
+                         "nothing to schedule.")
 
-    if not placements:
-        print("No papers to schedule: courses.csv has no course codes.")
-        return 2
-
-    # Step 5: students to seats. Done before anything is written, so a
-    # failed seating leaves no half-written plan.
-    try:
+        # Step 5: students to seats.
         seating = seat.make_seating(placements, data["rooms"],
                                     duties.section_of_student(data))
-    except schedule.NoPlan as reason:
-        print(reason)
-        return 2
 
-    # Step 6: teachers to rooms. Also before anything is written.
-    try:
+        # Step 6: teachers to rooms.
         duty_rows = duties.make_duties(seating, data,
                                        schedule.build_papers(data))
-    except schedule.NoPlan as reason:
-        print(reason)
-        return 2
+    except NoPlan as reason:
+        return write_why(str(reason), args.output)
 
     folder = make_output_folder(args.output)
     write_schedule(placements, folder / "schedule.csv")

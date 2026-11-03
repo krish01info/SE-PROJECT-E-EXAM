@@ -146,6 +146,13 @@ def tiny(tmp_path):
     return folder
 
 
+def only_why_txt(out_root):
+    """No plan writes one new folder holding only why.txt (step 7)."""
+    folders = list(out_root.iterdir())
+    return len(folders) == 1 and [f.name for f in folders[0].iterdir()] == [
+        "why.txt"]
+
+
 def replace_text(path, old, new):
     text = path.read_text(encoding="utf-8")
     assert old in text, f"test setup: {old!r} not in {path.name}"
@@ -155,6 +162,7 @@ def replace_text(path, old, new):
 def test_window_too_short_for_the_gap_rule(tiny, tmp_path, capsys):
     # Every tiny student has 3 papers. Mon-Wed gives only Mon and Wed
     # with a clear day between, so the third paper has nowhere to go.
+    # Since step 7 a cheap check finds this before scheduling.
     replace_text(tiny / "settings.yaml", "end_date: 2026-11-06",
                  "end_date: 2026-11-04")
     out_root = tmp_path / "out"
@@ -162,19 +170,22 @@ def test_window_too_short_for_the_gap_rule(tiny, tmp_path, capsys):
     out = capsys.readouterr().out
     assert code == 2
     assert "No plan possible." in out
-    assert "break the gap rule" in out
-    assert not out_root.exists()          # no partial plan is written
+    assert "Rule: gap" in out
+    assert "at most 2 papers fit" in out
+    assert only_why_txt(out_root)         # no partial plan is written
 
 
 def test_not_enough_seats(tiny, tmp_path, capsys):
-    # Only one S room: 12 seats, but CSE2001 has 16 students.
+    # Only one S room: 12 seats, but CSE2001 has 16 students. Since step 7
+    # a cheap check finds this before scheduling.
     (tiny / "rooms.csv").write_text("room_id,type,rows,seat_columns\n"
                                     "S01,S,6,3\n")
     code = main.main([str(tiny), "--output", str(tmp_path / "out")])
     out = capsys.readouterr().out
     assert code == 2
+    assert "Rule: seats" in out
     assert "Paper: CSE2001 (16 students)" in out
-    assert "at most 12 seats" in out
+    assert "give 12 seats to one paper" in out
 
 
 def test_not_enough_teachers(tiny, tmp_path, capsys):
@@ -190,8 +201,10 @@ def test_not_enough_teachers(tiny, tmp_path, capsys):
     code = main.main([str(tiny), "--output", str(tmp_path / "out")])
     out = capsys.readouterr().out
     assert code == 2, out
+    assert "Rule: paper placement" in out
     assert "Paper: CSE2001 (16 students)" in out
-    assert "3 teachers" in out
+    assert "teachers: 10 sessions" in out
+    assert "more teachers than the 3 there are" in out
 
 
 def test_a_session_must_really_be_seatable_not_just_counted():
@@ -238,4 +251,4 @@ def test_a_slot_still_waiting_at_the_end_is_no_plan(tiny, tmp_path, capsys):
     assert "Rule: duty room" in out
     assert "Slot: 2026-11-02 morning" in out
     assert "T005 (CSE2001)" in out
-    assert not out_root.exists()
+    assert only_why_txt(out_root)
