@@ -1,9 +1,9 @@
 # Start here
 
-**Current state:** step 5 (seat) is done, checked by Krish and committed on branch `krish/seat` (made from `krish/schedule`): one commit for the code, one for the model spec §9 change, one for these notes. `python main.py data/tiny` and `python main.py data/main` write `output/<timestamp>/schedule.csv` and `daywise_seating_plans/<date>/<session>/<room>.csv`, and exit 0. `main`: 481 room files, 289 with two papers. 51 tests pass.
+**Current state:** on branch `krish/duties` (from `krish/seat`). Step 5 redone and committed here: one paper per room, mixing only when rooms run out, and step 4 asks step 5 whether a session can really be seated (`4d2e25e` spec, `0f1afd0` code). `main`: 56 papers, 2–20 Nov, 599 rooms, 5 mixed. 54 tests pass. Not pushed.
 
-**How seating works:** two papers per room in alternating columns, never three; a pair stays together until one paper is finished, then the other gets a new partner; a paper with no partner left sits alone in every other column. See `seat.py` docstring.
+**Open problems:** tell Ishan the 2026-11-03 two-papers-per-room change is withdrawn; the 2026-10-22, 2026-10-28 and new 2026-11-03 change log rows are pending him. 51 of 599 rooms are part empty (see "To work on" in `PROGRESS.md`). `krish/generator`, `krish/load-validate`, `krish/schedule`, `krish/seat` still need PRs into `main`. `data/demo/` is an untracked copy of `tiny`.
 
-**Open problems:** the §9 change (two papers per room) changes a Decided rule and needs Ishan's approval; Krish is asking him. If he says no, redo step 5. `krish/generator`, `krish/load-validate`, `krish/schedule` and `krish/seat` still need PRs into `main`. `data/demo/` is an untracked local copy of `tiny`, not committed. Other points: "Open points to discuss" in `PROGRESS.md`.
+**Git in this folder from a Linux shell:** files on disk have Windows line endings, so use `git -c core.autocrlf=true ...`, or every file shows as changed. Committing needs delete permission (git removes its lock files). Author: Krish Sharma <krish425988888@gmail.com>.
 
-**Exact next step:** Krish pushes `krish/seat`. Then step 6, duties (model spec §10): teachers to rooms, writes `duties.csv`. Start a new branch `krish/duties` from `krish/seat`, then the step gate from `repo_instructions.md` §3. Note for step 6: a room can hold students of two papers.
+**Exact next step:** step 4 fix: a paper whose teacher teaches all of its students (HUM2001, T071, 13 Nov morning) must never be alone in its slot. Step gate first (`repo_instructions.md` §3). Then step 6 duties.
