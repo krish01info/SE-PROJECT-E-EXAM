@@ -13,13 +13,14 @@ Steps are from `docs/prototype1_model_spec.md` §14.
 
 - **Step 5, seat:** `seat.py`, `tests/test_seat.py`; `main.py` now also writes `daywise_seating_plans/<date>/<session>/<room>.csv`. Built on branch `krish/seat` (from `krish/schedule`). `main`: 481 room files, 289 with two papers. 51 tests pass. Checked by Krish (9 Nov evening, M03: CSE3003 and CSE4004, no paper in neighbouring columns). Committed on branch `krish/seat`.
 - **Step 5 redone (2026-11-03), on `krish/duties`:** one paper per room again, mixing only when rooms run out; step 4 now asks step 5 whether a session can really be seated. New `errors.py` holds `NoPlan`. `main`: 56 papers, 2–20 Nov, 599 rooms, 5 mixed. 54 tests pass. Checked by Krish (9 Nov evening: M16 one paper in columns 1, 3, 5; M17 and M18 mixed, two papers). Committed: spec (`4d2e25e`), code (`0f1afd0`).
+- **Step 4 fix (2026-11-03), on `krish/duties`:** new `duties.py` holds the rule for a teacher's own paper; step 4 asks it before booking; a paper that can't be alone waits in an empty session for another paper; in `seat.py` a new section starts a new room when that costs no extra room. `main`: 56 papers, 2–20 Nov, 596 rooms, 2 mixed, every teacher has a room. 63 tests pass. Checked by Krish (13 Nov morning: T071 teaches all of HUM2001, so S01–S04 are out; he takes S05–S07, MEC4003). Committed: spec (`1352df9`), code (`47f5fd8`).
 
 ## Next
 
 Branch `krish/duties` (from `krish/seat`, made 2026-11-03). Everything below goes on it, one commit per part, each checked by Krish first:
 
 1. ~~Redo step 5~~ done (see above).
-2. Fix step 4: a paper whose teacher teaches all of its students never sits alone in a slot.
+2. ~~Fix step 4~~ done (see above).
 3. Step 6: duties (model spec §10), writes `duties.csv`.
 
 ## Decisions made in step 2 (2026-10-28)
@@ -66,6 +67,10 @@ Branch `krish/duties` (from `krish/seat`, made 2026-11-03). Everything below goe
 - **Step 5 goes back to one paper per room**, mixing only when rooms run out (the original Decided rule in model spec §9). The 2026-11-03 two-papers-per-room change is withdrawn. Reason (Krish): this is what actually happens in our university.
 - **How to mix when needed:** put two papers' half-empty last rooms together into one room, in alternate columns. Reason (Krish): it uses the rooms well and keeps the roll order.
 - **Step 4 fix:** a paper whose teacher teaches all of its students must share its slot with at least one other paper, so the teacher has a room to go to.
+- **Step 4 checks the duty rule before booking.** Reason (Krish): it is good to verify early, where the error can come, to prevent it.
+- **Waiting for another paper:** a paper that can't be alone may wait in an empty session; later papers fill waiting sessions first; still waiting at the end means no plan. Reason (Krish): waiting is better than skipping, because we have to take the paper.
+- **A teacher whose sections are in every room of their paper** (e.g. `tiny` T003) is treated like one who teaches every section: a duty in the same slot, in a room with a different paper. Reason (Krish): it keeps the reason behind the rule.
+- **A new section starts a new room** if that costs no extra room. Reason (Krish): in real life we can't change the data, so the tool needs a method to fix this kind of issue.
 - **Step 4 asks step 5 first (option A):** a paper goes into a session only if step 5 can really seat it there; otherwise it tries another day or session. Reason (Krish): we are going for one paper per room. The other option (B, two papers in almost every room of a very full slot) was not the university's way.
 - **Duties, mixed rooms:** a teacher who teaches only some sections of a paper may meet "invigilate each paper you teach" in a room holding other sections of that paper plus another paper. (Krish: yes, it counts.)
 - **PhD scholars get fewer duties:** they are picked only when no other teacher is free. Reason (Krish): invigilation is not their main purpose. UGC has no rule on invigilation counts; its PhD Regulations 2022 allow only 4–6 hours a week of teaching or research assistantship, so research comes first.

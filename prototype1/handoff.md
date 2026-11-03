@@ -1,14 +1,9 @@
 # Start here
 
-**Current state:** on branch `krish/duties` (from `krish/seat`). Step 5 redone and committed here: one paper per room, mixing only when rooms run out, and step 4 asks step 5 whether a session can really be seated (`4d2e25e` spec, `0f1afd0` code). `main`: 56 papers, 2–20 Nov, 599 rooms, 5 mixed. 54 tests pass. Not pushed.
+**Current state:** on branch `krish/duties` (from `krish/seat`). Done here: step 5 redone (one paper per room, mix only when rooms run out) and the step 4 fix (step 4 asks step 5 and the duty rule before booking; a paper that can't be alone waits for another paper; a new section starts a new room if it costs no extra room). `duties.py` holds the rule for a teacher's own paper. `main`: 56 papers, 2–20 Nov, 596 rooms, 2 mixed, every teacher has a room for each paper they teach. 63 tests pass. Commits up to `47f5fd8` are not pushed yet (Krish pushes).
 
-**Open problems:** tell Ishan the 2026-11-03 two-papers-per-room change is withdrawn; the 2026-10-22, 2026-10-28 and new 2026-11-03 change log rows are pending him. 51 of 599 rooms are part empty (see "To work on" in `PROGRESS.md`). `krish/generator`, `krish/load-validate`, `krish/schedule`, `krish/seat` still need PRs into `main`. `data/demo/` is an untracked copy of `tiny`.
+**Open problems:** tell Ishan the two-papers-per-room change is withdrawn; change log rows of 2026-10-22, 2026-10-28 and the two of 2026-11-03 are pending him. Part-empty rooms to work on later (`PROGRESS.md`, "To work on"). `krish/generator`, `krish/load-validate`, `krish/schedule`, `krish/seat` still need PRs into `main`. `data/demo/` is an untracked copy of `tiny`.
 
 **Git in this folder from a Linux shell:** files on disk have Windows line endings, so use `git -c core.autocrlf=true ...`, or every file shows as changed. Committing needs delete permission (git removes its lock files). Author: Krish Sharma <krish425988888@gmail.com>.
 
-**Found after the step 5 redo (teachers with no allowed room in their paper's slot):**
-- `main`, 2 cases, both a paper ALONE in its slot whose teacher teaches all of it: T057 / CSE4004 (10 Nov morning), T071 / HUM2001 (13 Nov morning).
-- `tiny`, 3 cases: T002 / ECE2001 and T004 / CSE2002 (alone in slot, teacher teaches all of it), and T003 / CSE2001 (teaches only BT2ECOM_I, but both rooms of CSE2001 hold some BT2ECOM_I students, and CSE2001 is alone in its slot).
-- Proposed for the step gate: (1) step 4 checks this rule too: a paper goes into a session only if every teacher of every paper there has an allowed room; (2) widen the 2026-10-22 team rule: a teacher who can't find a room with their paper but none of their students is treated like one who teaches every section (duty in the same slot, room writing a different paper). Krish has NOT answered these yet.
-
-**Exact next step:** step 4 fix: a paper whose teacher teaches all of its students (HUM2001, T071, 13 Nov morning) must never be alone in its slot. Step gate first (`repo_instructions.md` §3). Then step 6 duties.
+**Exact next step:** step 6, duties (model spec §10): fill every room with 2 teachers, write `duties.csv` (`date, session, room_id, teacher_id`). Decided already: each teacher (not PhD) gets one duty for each paper they teach, in a room from `duties.paper_duty_rooms()`; never a room with their own students; at most one duty per slot; PhD scholars get fewer duties (picked only when no other teacher is free); spread duties evenly. If a room can't get 2 teachers: no plan, exit 2. Step gate first (`repo_instructions.md` §3).
