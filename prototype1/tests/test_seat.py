@@ -1,5 +1,6 @@
-"""Step 5 tests: the seating keeps the rules of model spec section 9, with
-the step 5 change: two papers per room, never three.
+"""Step 5 tests: the seating keeps the rules of model spec section 9: one
+paper per room, two papers in a room only when the rooms run out (redone
+2026-11-03).
 
 Run from prototype1/:
 
@@ -44,57 +45,80 @@ def full_seating(dataset):
 
 # ------------------------------------------------- small cases, by hand
 
-def test_two_papers_worked_out_by_hand():
-    # A has 20 students, B has 10. Rooms: S01 (6 x 3), then M01 (7 x 6).
-    # S01: A is bigger -> columns 1 and 3 (12 seats): A01..A12.
-    #      B -> column 2 (6 seats): B01..B06.   Left: A 8, B 4.
-    # M01: A is bigger -> columns 1, 3, 5: A13..A19 down column 1, A20 at
-    #      the front of column 3. B -> columns 2, 4, 6: B07..B10 in column 2.
-    plans = seat.seat_slot([paper("A", 20), paper("B", 10)], [S_ROOM, M_ROOM])
+S02 = dict(S_ROOM, room_id="S02")
+S03 = dict(S_ROOM, room_id="S03")
 
-    assert [p.room_id for p in plans] == ["S01", "M01"]
+
+def test_one_paper_per_room_next_batch_in_next_room():
+    # A has 20 students, B has 10. Rooms: S01, M01, S02. Enough rooms, so no
+    # mixing. A (bigger) goes first:
+    # S01: odd columns 1 and 3 (12 seats): A01..A12.
+    # M01: odd columns 1, 3, 5: A13..A19 down column 1, A20 at the front of
+    #      column 3.
+    # S02: B alone: B01..B06 in column 1, B07..B10 in column 3.
+    plans = seat.seat_slot([paper("A", 20), paper("B", 10)],
+                           [S_ROOM, M_ROOM, S02])
+
+    assert [p.papers for p in plans] == [["A"], ["A"], ["B"]]
     assert picture(plans[0]) == [
-        "A01 B01 A07",
-        "A02 B02 A08",
-        "A03 B03 A09",
-        "A04 B04 A10",
-        "A05 B05 A11",
-        "A06 B06 A12",
+        "A01 . A07",
+        "A02 . A08",
+        "A03 . A09",
+        "A04 . A10",
+        "A05 . A11",
+        "A06 . A12",
     ]
     assert picture(plans[1]) == [
-        "A13 B07 A20 . . .",
-        "A14 B08 . . . .",
-        "A15 B09 . . . .",
-        "A16 B10 . . . .",
+        "A13 . A20 . . .",
+        "A14 . . . . .",
+        "A15 . . . . .",
+        "A16 . . . . .",
         "A17 . . . . .",
         "A18 . . . . .",
         "A19 . . . . .",
     ]
+    assert picture(plans[2]) == [
+        "B01 . B07",
+        "B02 . B08",
+        "B03 . B09",
+        "B04 . B10",
+        "B05 . .",
+        "B06 . .",
+    ]
 
 
-def test_finished_paper_leaves_its_seats_empty_no_third_paper():
-    # S01 gets A (12, the most) and C (5). C runs out after 5 seats of
-    # column 2; its 6th seat stays empty, B does NOT come in.
-    # S02 gets B alone: columns 1 and 3 only.
-    plans = seat.seat_slot([paper("A", 12), paper("B", 3), paper("C", 5)],
-                           [S_ROOM, dict(S_ROOM, room_id="S02")])
+def test_leftovers_are_mixed_when_rooms_run_out():
+    # A 13, B 13, three S rooms. Alone they need 4 rooms (12 + 1 each).
+    # So: A fills S01 alone, B fills S02 alone, and the leftovers A13 and
+    # B13 share S03: A in column 1, B in column 2.
+    plans = seat.seat_slot([paper("A", 13), paper("B", 13)],
+                           [S_ROOM, S02, S03])
 
-    assert plans[0].papers == ["A", "C"]
-    assert picture(plans[0])[5] == "A06 . A12"
-    assert plans[1].papers == ["B"]
-    assert picture(plans[1]) == ["B01 . .", "B02 . .", "B03 . .",
+    assert [p.papers for p in plans] == [["A"], ["B"], ["A", "B"]]
+    assert picture(plans[2]) == ["A13 B13 .", ". . .", ". . .",
                                  ". . .", ". . .", ". . ."]
 
 
-def test_a_pair_stays_together_until_one_paper_is_finished():
-    # S01: A (40) + B (10). B has 4 left, C has 9: C now has more left, but
-    # B keeps its place next to A until it is finished.
-    # S02: A + B again (B's last 4). S03 and S04: A + C.
-    rooms = [dict(S_ROOM, room_id=f"S0{n}") for n in (1, 2, 3, 4)]
-    plans = seat.seat_slot([paper("A", 40), paper("B", 10), paper("C", 9)],
-                           rooms)
-    assert [p.papers for p in plans] == [["A", "B"], ["A", "B"],
-                                         ["A", "C"], ["A", "C"]]
+def test_mixing_only_where_needed():
+    # A 13, B 5, C 3, three S rooms. Alone they need 4 rooms, so we mix.
+    # A fills S01. Leftovers: B 5, C 3, A 1. Two rooms are free for three
+    # leftovers, so ONE room gets two papers: S02 = B + C. A's last student
+    # gets S03 alone.
+    plans = seat.seat_slot([paper("A", 13), paper("B", 5), paper("C", 3)],
+                           [S_ROOM, S02, S03])
+
+    assert [p.papers for p in plans] == [["A"], ["B", "C"], ["A"]]
+
+
+def test_a_room_never_holds_a_third_paper():
+    # As above but only two rooms. S02 takes B + C; A's last student would
+    # be a third paper, so there is no plan.
+    with pytest.raises(schedule.NoPlan) as error:
+        seat.seat_slot([paper("A", 13), paper("B", 5), paper("C", 3)],
+                       [S_ROOM, S02])
+    message = str(error.value)
+    assert "Rule: seats" in message
+    assert "1 of 21 students still have no seat: A (1)" in message
 
 
 def test_one_paper_alone_uses_every_other_column():
@@ -105,23 +129,15 @@ def test_one_paper_alone_uses_every_other_column():
 
 
 def test_tie_in_size_goes_by_paper_id():
+    # Y and Z (6 each) can't have a room each: one room, so they mix, and
+    # Y comes first (odd columns).
     plans = seat.seat_slot([paper("Z", 6), paper("Y", 6)], [S_ROOM])
-    assert plans[0].papers == ["Y", "Z"]      # Y gets the odd columns
+    assert plans[0].papers == ["Y", "Z"]
 
 
 def test_only_rooms_in_use_are_returned():
     plans = seat.seat_slot([paper("A", 3)], [S_ROOM, M_ROOM])
     assert [p.room_id for p in plans] == ["S01"]
-
-
-def test_rooms_run_out_raises_no_plan():
-    # One S room seats at most 18 with two papers. 20 + 10 cannot fit.
-    with pytest.raises(schedule.NoPlan) as error:
-        seat.seat_slot([paper("A", 20), paper("B", 10)], [S_ROOM])
-    message = str(error.value)
-    assert "Rule: seats" in message
-    assert "12 of 30 students still have no seat" in message
-    assert "A (8)" in message and "B (4)" in message
 
 
 # ------------------------------------------------- the rules, full datasets
@@ -149,6 +165,16 @@ def test_column_rule_and_at_most_two_papers_per_room(dataset):
             for left, right in zip(papers_in, papers_in[1:]):
                 assert not (left & right), (slot, plan.room_id)
             assert len(set().union(*papers_in)) <= 2, (slot, plan.room_id)
+
+
+@pytest.mark.parametrize("dataset", ["tiny", "main"])
+def test_mixed_rooms_only_when_one_paper_per_room_does_not_fit(dataset):
+    data, placements, seating = full_seating(dataset)
+    for slot, plans in seating.items():
+        if any(len(plan.papers) == 2 for plan in plans):
+            papers = [p.paper for p in placements
+                      if (p.date, p.session) == slot]
+            assert seat.seat_alone(papers, data["rooms"]) is None, slot
 
 
 @pytest.mark.parametrize("dataset", ["tiny", "main"])

@@ -165,7 +165,7 @@ def test_not_enough_seats(tiny, tmp_path, capsys):
     out = capsys.readouterr().out
     assert code == 2
     assert "Paper: CSE2001 (16 students)" in out
-    assert "limit 12 seats" in out
+    assert "at most 12 seats" in out
 
 
 def test_not_enough_teachers(tiny, tmp_path, capsys):
@@ -183,3 +183,17 @@ def test_not_enough_teachers(tiny, tmp_path, capsys):
     assert code == 2, out
     assert "Paper: CSE2001 (16 students)" in out
     assert "3 teachers" in out
+
+
+def test_a_session_must_really_be_seatable_not_just_counted():
+    # 13 + 5 + 3 = 21 students, and two S rooms give 24 one-paper seats, so
+    # counting alone says yes. But step 5 can't seat it: A fills S01, then
+    # B, C and A's last student would need S02 with three papers. So the
+    # session does not fit. (This is what went wrong on 9 Nov evening.)
+    rooms = [{"room_id": "S01", "type": "S", "rows": "6", "seat_columns": "3"},
+             {"room_id": "S02", "type": "S", "rows": "6", "seat_columns": "3"}]
+    papers = [schedule.Paper(name, [name],
+                             {f"{name}{n:02d}" for n in range(count)})
+              for name, count in (("A", 13), ("B", 5), ("C", 3))]
+    assert not schedule.session_fits(papers, rooms, 24, 99, 2)
+    assert schedule.session_fits(papers[:2], rooms, 24, 99, 2)

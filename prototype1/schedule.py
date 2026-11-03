@@ -12,7 +12,12 @@ How it works (decided in step 4, 2026-10-28):
                not a holiday.
   4. Limits.   A session holds at most the "one paper per room" seats:
                every room uses every other seat column (S: 12, M: 21).
-               It also needs rooms x invigilators_per_room teachers.
+               Then step 5 is ASKED: a paper goes into a session only if
+               seat.seat_slot() can really seat that session with it, and
+               the rooms it opens x invigilators_per_room is at most the
+               number of teachers. (2026-11-03, Krish: counting seats alone
+               let 9 Nov evening take 590 students that one paper per room
+               could not seat.)
   5. Place.    Papers go biggest first (most students; ties by paper ID).
                Each paper gets the EARLIEST exam day that is at least
                min_gap_days away from every paper it clashes with and has
@@ -25,6 +30,9 @@ never cause a clash. It only balances seats between morning and evening.
 
 import datetime
 from dataclasses import dataclass, field
+
+import seat
+from errors import NoPlan
 
 WEEKDAY_NAMES = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 
@@ -41,10 +49,6 @@ class Placement:
     date: datetime.date
     session: str
     paper: Paper
-
-
-class NoPlan(Exception):
-    """Raised when no schedule is possible. str(error) is the reason."""
 
 
 # ---------------------------------------------------------------- 1. papers
@@ -123,24 +127,18 @@ def one_paper_seats(room):
     return int(room["rows"]) * columns_used
 
 
-def rooms_needed(students, rooms):
-    """Estimate how many rooms a session opens: rooms in rooms.csv order until
-    their one-paper seats cover the students. Step 5 does the real seating."""
-    seats = 0
-    count = 0
-    for room in rooms:
-        if seats >= students:
-            break
-        seats += one_paper_seats(room)
-        count += 1
-    return count
-
-
-def session_fits(students, rooms, seat_limit, teacher_count, per_room):
-    """Can one session hold this many students, by seats and by teachers?"""
+def session_fits(papers, rooms, seat_limit, teacher_count, per_room):
+    """Can one session hold these papers? Three checks, cheapest first:
+    the students fit in the one-paper-per-room seats, step 5 can really seat
+    them, and there are enough teachers for the rooms it opens."""
+    students = sum(len(paper.students) for paper in papers)
     if students > seat_limit:
         return False
-    return rooms_needed(students, rooms) * per_room <= teacher_count
+    try:
+        plans = seat.seat_slot(papers, rooms)
+    except NoPlan:
+        return False
+    return len(plans) * per_room <= teacher_count
 
 
 # ---------------------------------------------------------------- 5. place
@@ -167,6 +165,7 @@ def make_schedule(data):
 
     date_of = {}                                    # paper_id -> date
     load = {(day, s): 0 for day in days for s in sessions}   # students
+    papers_in = {(day, s): [] for day in days for s in sessions}
     placements = []
 
     order = sorted(papers.values(),
@@ -184,7 +183,7 @@ def make_schedule(data):
                 blocked_by_gap += 1
                 continue
             fitting = [s for s in sessions
-                       if session_fits(load[(day, s)] + size, rooms,
+                       if session_fits(papers_in[(day, s)] + [paper], rooms,
                                        seat_limit, teacher_count, per_room)]
             if not fitting:
                 blocked_by_room += 1
@@ -193,6 +192,7 @@ def make_schedule(data):
             session = min(fitting, key=lambda s: load[(day, s)])
             date_of[paper.paper_id] = day
             load[(day, session)] += size
+            papers_in[(day, session)].append(paper)
             placements.append(Placement(day, session, paper))
             placed = True
             break
@@ -203,8 +203,9 @@ def make_schedule(data):
                 f"Of {len(days)} exam days, {blocked_by_gap} break the gap "
                 f"rule (a clashing paper is less than {gap} days away) and "
                 f"{blocked_by_room} have no session with room for it "
-                f"(limit {seat_limit} seats and {teacher_count} teachers "
-                f"per session).")
+                f"(at most {seat_limit} seats, every student seated one "
+                f"paper per room or mixed where needed, and "
+                f"{teacher_count} teachers per session).")
 
     placements.sort(key=lambda p: (p.date, sessions.index(p.session),
                                    p.paper.paper_id))
