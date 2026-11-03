@@ -5,12 +5,12 @@ Run from prototype1/:
     python main.py data/tiny
 
 Exit codes (model spec section 4):
-    0  a plan was written (right now: schedule.csv and the room CSVs)
+    0  a plan was written: schedule.csv, the room CSVs and duties.csv
     1  the input is invalid; every problem is printed
     2  no plan is possible; the reason is printed and nothing is written
 
-Built so far: step 3 (load and validate), step 4 (schedule) and
-step 5 (seat). Duties (step 6) come next.
+Built so far: step 3 (load and validate), step 4 (schedule), step 5
+(seat) and step 6 (duties).
 """
 
 import argparse
@@ -26,6 +26,7 @@ import seat
 import validate
 
 SCHEDULE_COLUMNS = ["date", "session", "paper_id", "course_codes", "students"]
+DUTY_COLUMNS = ["date", "session", "room_id", "teacher_id"]
 
 
 def summary(data):
@@ -82,6 +83,16 @@ def write_seating(seating, folder):
     return count
 
 
+def write_duties(rows, path):
+    """duties.csv: one row per teacher per room per slot (model spec
+    section 11)."""
+    with open(path, "w", newline="", encoding="utf-8") as file:
+        writer = csv.writer(file)
+        writer.writerow(DUTY_COLUMNS)
+        for day, session, room_id, teacher_id in rows:
+            writer.writerow([day.isoformat(), session, room_id, teacher_id])
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(
         description="Turn an input folder into an exam plan.")
@@ -126,9 +137,18 @@ def main(argv=None):
         print(reason)
         return 2
 
+    # Step 6: teachers to rooms. Also before anything is written.
+    try:
+        duty_rows = duties.make_duties(seating, data,
+                                       schedule.build_papers(data))
+    except schedule.NoPlan as reason:
+        print(reason)
+        return 2
+
     folder = make_output_folder(args.output)
     write_schedule(placements, folder / "schedule.csv")
     room_files = write_seating(seating, folder)
+    write_duties(duty_rows, folder / "duties.csv")
 
     days = sorted({placement.date for placement in placements})
     print(f"Scheduled {len(placements)} papers on {len(days)} days, "
@@ -144,8 +164,12 @@ def main(argv=None):
     print(f"Seating: {room_files} room files ({two_paper} with two papers). "
           f"Most rooms in one slot: {len(busiest[1])} of {len(data['rooms'])}"
           f" ({busiest[0][0]} {busiest[0][1]}).")
+    numbers = duties.duty_summary(duty_rows, data)
+    print(f"Duties: {len(duty_rows)}. Each regular teacher has "
+          f"{numbers['fewest']} to {numbers['most']}; PhD scholars have "
+          f"{numbers['phd_duties']}. Teachers with both shifts on one day: "
+          f"{numbers['double_days']} times.")
     print(f"Wrote {folder}")
-    print("Duties (step 6) are not built yet.")
     return 0
 
 

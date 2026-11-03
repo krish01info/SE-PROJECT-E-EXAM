@@ -15,13 +15,17 @@ Steps are from `docs/prototype1_model_spec.md` §14.
 - **Step 5 redone (2026-11-03), on `krish/duties`:** one paper per room again, mixing only when rooms run out; step 4 now asks step 5 whether a session can really be seated. New `errors.py` holds `NoPlan`. `main`: 56 papers, 2–20 Nov, 599 rooms, 5 mixed. 54 tests pass. Checked by Krish (9 Nov evening: M16 one paper in columns 1, 3, 5; M17 and M18 mixed, two papers). Committed: spec (`4d2e25e`), code (`0f1afd0`).
 - **Step 4 fix (2026-11-03), on `krish/duties`:** new `duties.py` holds the rule for a teacher's own paper; step 4 asks it before booking; a paper that can't be alone waits in an empty session for another paper; in `seat.py` a new section starts a new room when that costs no extra room. `main`: 56 papers, 2–20 Nov, 596 rooms, 2 mixed, every teacher has a room. 63 tests pass. Checked by Krish (13 Nov morning: T071 teaches all of HUM2001, so S01–S04 are out; he takes S05–S07, MEC4003). Committed: spec (`1352df9`), code (`47f5fd8`).
 
+- **Step 6, duties (2026-11-03), on `krish/duties`:** `duties.make_duties()`, 12 new tests in `tests/test_duties.py`; `main.py` now also writes `duties.csv`. `main`: 1,192 duties, each regular teacher 15 or 16, PhD scholars 0, 418 teacher-days with both shifts (about 415 is the least possible). 75 tests pass. Checked by Krish (T071 teaches all of HUM2001, 13 Nov morning, S01–S04: he gets S05, MEC4003, same session, not with his own students). Committed: spec, then code.
+
 ## Next
 
 Branch `krish/duties` (from `krish/seat`, made 2026-11-03). Everything below goes on it, one commit per part, each checked by Krish first:
 
 1. ~~Redo step 5~~ done (see above).
 2. ~~Fix step 4~~ done (see above).
-3. Step 6: duties (model spec §10), writes `duties.csv`.
+3. ~~Step 6: duties~~ done (see above).
+
+Next step: step 7, no plan (model spec §14): the reasons from §12, `why.txt`, one impossible dataset per reason.
 
 ## Decisions made in step 2 (2026-10-28)
 
@@ -75,6 +79,14 @@ Branch `krish/duties` (from `krish/seat`, made 2026-11-03). Everything below goe
 - **Duties, mixed rooms:** a teacher who teaches only some sections of a paper may meet "invigilate each paper you teach" in a room holding other sections of that paper plus another paper. (Krish: yes, it counts.)
 - **PhD scholars get fewer duties:** they are picked only when no other teacher is free. Reason (Krish): invigilation is not their main purpose. UGC has no rule on invigilation counts; its PhD Regulations 2022 allow only 4–6 hours a week of teaching or research assistantship, so research comes first.
 
+## Decisions made in step 6 (2026-11-03)
+
+- **PhD scholars come last:** picked only when no other teacher can be placed. Reason (Krish): "let's not disturb the PhD scholars"; invigilation isn't their main purpose. On `main` they get 0 duties.
+- **A plan is found whenever one exists (option b):** before saying no plan, the tool tries a chain of moves: a teacher in a full room moves to another room they may sit in, and so on. Reason (Krish): saying "no solution" is not an option when there is one. Found while building: the chain only matters for own-paper duties, because a teacher with no paper in a slot has no students in any room of it and may sit anywhere.
+- **Order for every other place (option i):** no duty yet that day first, then fewest duties so far, then teacher ID. Reason (Krish): a teacher can't do a full day of invigilation, they also check copies and have other work. A strict one shift a day doesn't fit `main` (see "To work on later" below), so for now it is a preference.
+- **Two own papers in one slot:** one duty must count for both; if no room does, no plan (Rule: duty room). Not seen on `main` or `tiny`.
+- **No plan messages:** "Rule: duty room" when an own-paper duty can't be placed, "Rule: duties" when a room can't get its teachers, with the slot, the short rooms and the counts. `why.txt` is step 7.
+
 ## Generator choices (Default level, open to change)
 
 - A paper = one subject key; a core paper's sections are split into groups of at most 3 (at least 2 groups when 2+ sections). A paper with any elective code follows the elective rule (only Big Data is mixed: core in BT4ECOM, elective in BT3CSE).
@@ -84,6 +96,7 @@ Branch `krish/duties` (from `krish/seat`, made 2026-11-03). Everything below goe
 
 ## Open points to discuss
 
+- **To work on later (Krish, 2026-11-03): one shift a day per teacher.** Krish wants each teacher to do only one shift (morning or evening) on a day, because teachers also have copy checking and other work. Not done now (after all steps, maybe). On `main` a strict rule can't fit: 596 rooms over 14 exam days, but one shift a day allows at most 37 rooms a day with 75 regular teachers (518 in all), or 42 with all 85 (588). Today 9 and 12 Nov need 72 rooms each. A strict rule needs a step 4 check (rooms on a day <= teachers / 2), model spec §10 changed from Out to Decided, and one of: more teachers in the data, a longer window (about 17-18 exam days), or fewer rooms (mixing small leftovers, saves about 25 at most, not enough alone). Step 6 for now only prefers one shift a day (see step 6 decisions).
 - **To work on (Krish, 2026-11-03): too many part-empty rooms.** With one paper per room, a paper's last room is rarely full. On `main` (after the step 5 redo), 51 of 599 rooms are part empty: 46 alone rooms (453 empty seats) and the 5 mixed rooms. Worst alone case: 9 Nov morning, M18 holds 3 MGT3002 students in 21 seats. Each such room still needs 2 invigilators. Ideas to discuss later: mix very small leftovers even when rooms don't run out, or let step 4 avoid sessions where a paper would spill a few students into a new room. Not changed now, because one paper per room is the university's way and gives teachers rooms with a different paper (§10).
 - The 2026-10-13 row "each faculty member teaches 2–3 sections" no longer matches: most teachers now have 1 teaching group, 19 have 2, and a 1-teacher elective covers up to 7 sections.
 - Krish's idea for step 6: when teachers run short, the paper's teacher stays nearby instead of in a room. Not in prototype1 as is: buildings and room locations are Out (model spec §2), and "present without a duty" isn't in §10. Discuss at step 6 or keep for a later prototype.
