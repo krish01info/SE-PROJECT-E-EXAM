@@ -19,6 +19,8 @@ Steps are from `docs/prototype1_model_spec.md` §14.
 
 - **Step 7, no plan (2026-11-03), on `krish/duties`:** every no-plan stop goes through one path in `main.py`: it prints the reason, writes the same text to `why.txt` (the only file in the new timestamped folder) and exits 2. Every message names its rule. Two cheap checks run before scheduling (`schedule.check_before_scheduling()`): a student with more papers than the window can hold (`Rule: gap`), and a paper bigger than all rooms together (`Rule: seats`). 7 impossible datasets in `data/impossible/` (see its `README.md`); 12 new tests in `tests/test_no_plan.py`. `tiny` and `main` give the same plans as before. 87 tests pass. Checked by Krish (`duty_room_full`: T006 teaches those students, so can't sit in S01; S02, the only other room, has one place and T005 takes it). Committed: code, then notes.
 
+- **Step 8, checker (2026-11-05), on `krish/checker` (from `krish/duties`):** `check.py` re-reads an input folder and a plan folder and checks the 20 yes/no rules of the spec: one slot per paper, exam days, gap, `same_paper`, room shape, column rule, one paper per seat column, at most two papers per room, every student seated once, the paper in its slot, roll order, 2 teachers per room, one duty per slot, never with own students, own-paper duty, duties only in rooms in use, and the plan files. Run: `python check.py data/tiny output/<timestamp>`. Exit 0 clean, 1 can't check (input or plan folder can't be read), 2 nothing to check (only `why.txt`), 3 the plan breaks a rule. It never writes a file. Fresh plans of `tiny` and `main` are clean (`main`: 596 room files, 8,750 seats, 1,192 duties, about a second). 28 new tests in `tests/test_check.py`, each breaking one thing in a `tiny` plan. 115 tests pass. Checked by Krish (2 Nov morning, S01: BT2CSE0004 moved to the middle column; he expected the column rule, and the checker named it, columns 1 and 2, listing both columns' seats). Committed: code (`c89477d`), then notes.
+
 ## Next
 
 Branch `krish/duties` (from `krish/seat`, made 2026-11-03). Everything below goes on it, one commit per part, each checked by Krish first:
@@ -29,7 +31,7 @@ Branch `krish/duties` (from `krish/seat`, made 2026-11-03). Everything below goe
 
 4. ~~Step 7: no plan~~ done (see above).
 
-Next step: step 8, checker (model spec §14).
+Step 8 (checker) is on its own branch `krish/checker` (from `krish/duties`, made 2026-11-05). Next after it: step 9, wrap-up (model spec §14).
 
 ## Decisions made in step 2 (2026-10-28)
 
@@ -98,6 +100,17 @@ Next step: step 8, checker (model spec §14).
 - **Backup checks stay** (no dataset, tested directly): `seat.py` running out of rooms, one own paper with no room, two own papers with no shared room, empty `courses.csv`. Reason (Krish): to show we thought of these even if they never happen. Listed with reasons in `data/impossible/README.md`.
 - Found: step 4 checks each own paper on its own, so "two own papers in one slot, no one room for both" can still reach step 6. `tiny` has too few sections to show it. Not changed; a possible later fix is for step 4 to check both together.
 - Cheap check "more students than seats" is done per paper: one paper alone can use at most the one-paper seats of all rooms (594 in `main`).
+
+## Decisions made in step 8 (2026-11-05)
+
+- **Only the yes/no rules are checked** (20 rules). The "try to" rules (one paper per room where possible, a new section in a new room, rooms in `rooms.csv` order, biggest paper first, PhD scholars last, one shift a day, fewest duties first) are not checked. Reason (Krish): they are preferences, not rules.
+- **The checker reads every file with its own code** and imports nothing from the tool (`loader.py`, `schedule.py`, `seat.py`, `duties.py`). Reason (Krish): "we want it error-proof", so a bug in the tool's reading code can't hide from the checker. Cost: about 150 lines that read files a second time.
+- **Only the main issue for each mistake.** Reason (Krish): so we can fix it, without unnecessary errors. How: three stages. Stage 1, the plan files are there and the right shape; if not, the checker stops. Stage 2, each schedule row, seat and duty row on its own; a bad seat is reported once and left out of stage 3. Stage 3, the rules over many rows; each room, each paper in a slot and each teacher in a slot is reported at most once. A paper whose date sheet and room files disagree is reported once and left out of the gap and own-paper checks, because its real date is not known.
+- **Known case with two lines:** a cell holding an unknown student in place of a real one gives "not a student" and "no seat for <the real one>". The checker can't know which missing student belonged in that seat; guessing could hide a student who really has no seat. Krish: keep both, and print why both lines are shown, because "we don't know which is correct, so I don't want to delete a record I am not sure about; the human gets the whole responsibility for the outcome". The checker prints the reason under the "seated once" line.
+- **A column rule problem lists both columns' seats** of that paper (rows and students), so the stray seat is easy to spot. Reason (Krish): it points closer to the error than naming two columns. The checker still can't know which side is wrong.
+- **Exit codes:** 0 clean, 1 can't check, 2 only `why.txt`, 3 the plan breaks a rule. Reason (Krish): 1 alone is too general; 3 means an issue in the plan, and the screen names the rule that broke.
+- **The checker never writes a file**, not even `why.txt`: the plan folder holds only the three plan parts (model spec §11), and invalid input is a different failure from no plan (§12).
+- The spec doesn't change: §13 already asks for a checker separate from the engine.
 
 ## Generator choices (Default level, open to change)
 
