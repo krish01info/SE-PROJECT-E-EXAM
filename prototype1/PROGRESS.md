@@ -21,6 +21,8 @@ Steps are from `docs/prototype1_model_spec.md` §14.
 
 - **Step 8, checker (2026-11-05), on `krish/checker` (from `krish/duties`):** `check.py` re-reads an input folder and a plan folder and checks the 20 yes/no rules of the spec: one slot per paper, exam days, gap, `same_paper`, room shape, column rule, one paper per seat column, at most two papers per room, every student seated once, the paper in its slot, roll order, 2 teachers per room, one duty per slot, never with own students, own-paper duty, duties only in rooms in use, and the plan files. Run: `python check.py data/tiny output/<timestamp>`. Exit 0 clean, 1 can't check (input or plan folder can't be read), 2 nothing to check (only `why.txt`), 3 the plan breaks a rule. It never writes a file. Fresh plans of `tiny` and `main` are clean (`main`: 596 room files, 8,750 seats, 1,192 duties, about a second). 28 new tests in `tests/test_check.py`, each breaking one thing in a `tiny` plan. 115 tests pass. Checked by Krish (2 Nov morning, S01: BT2CSE0004 moved to the middle column; he expected the column rule, and the checker named it, columns 1 and 2, listing both columns' seats). Committed: code (`c89477d`), then notes.
 
+- **Step 9, wrap-up (2026-11-05), on `krish/wrap-up` (from `krish/checker`):** `prototype1/README.md` rewritten as a product guide: what you need, a one-minute try with `tiny`, what the output looks like, how to make your own data (every file with its columns, an example and its checks), the rules every plan follows, what happens on bad input or no plan, the checker, exit codes, datasets, tests, the stages, and what it does not do yet. No code changed. Checked by Krish: he ran README section 2 on his Windows machine (`python main.py data/tiny`, "Wrote output\2026-11-05_16-02-38"; a note on Windows `\` paths was added) and explained the duties stage in his own words (a teacher of a paper is present in that paper's session, but never in a room with the students they taught). Committed: README, then notes. The spec's check is for every teammate: each runs `tiny` from the README and explains one stage.
+
 ## Next
 
 Branch `krish/duties` (from `krish/seat`, made 2026-11-03). Everything below goes on it, one commit per part, each checked by Krish first:
@@ -31,7 +33,7 @@ Branch `krish/duties` (from `krish/seat`, made 2026-11-03). Everything below goe
 
 4. ~~Step 7: no plan~~ done (see above).
 
-Step 8 (checker) is on its own branch `krish/checker` (from `krish/duties`, made 2026-11-05). Next after it: step 9, wrap-up (model spec §14).
+Step 8 (checker) is on its own branch `krish/checker` (from `krish/duties`, made 2026-11-05). Step 9 (wrap-up) is on `krish/wrap-up` (from `krish/checker`, made 2026-11-05). After step 9, prototype1's build steps are all done.
 
 ## Decisions made in step 2 (2026-10-28)
 
@@ -111,6 +113,13 @@ Step 8 (checker) is on its own branch `krish/checker` (from `krish/duties`, made
 - **Exit codes:** 0 clean, 1 can't check, 2 only `why.txt`, 3 the plan breaks a rule. Reason (Krish): 1 alone is too general; 3 means an issue in the plan, and the screen names the rule that broke.
 - **The checker never writes a file**, not even `why.txt`: the plan folder holds only the three plan parts (model spec §11), and invalid input is a different failure from no plan (§12).
 - The spec doesn't change: §13 already asks for a checker separate from the engine.
+
+## Decisions made in step 9 (2026-11-05)
+
+- **The README is a product guide for anyone who wants to make an exam plan**, not only for the team. Reason (Krish): "more like a general product".
+- **It teaches how to build your own input data**, every file with its columns, an example and its checks, so a user needs no other document. Reason (Krish): "they will have their own data".
+- **No teammate names in the README** (who explains which stage), because it is a product guide.
+- One branch for the task: `krish/wrap-up`.
 
 ## Generator choices (Default level, open to change)
 
