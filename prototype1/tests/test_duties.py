@@ -215,7 +215,8 @@ def test_every_rule_holds_on_real_data(dataset):
     data = loader.load(PROTOTYPE / "data" / dataset)
     section_of = duties.section_of_student(data)
     placements = schedule.make_schedule(data)
-    seating = seat.make_seating(placements, data["rooms"], section_of)
+    seating = seat.make_seating(placements, data["rooms"], section_of,
+                                schedule.room_check_for(data))
     papers = schedule.build_papers(data)
     rows = duties.make_duties(seating, data, papers)
     teaching = duties.build_teaching(data, papers)

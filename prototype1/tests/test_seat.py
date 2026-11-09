@@ -16,6 +16,7 @@ import pytest
 PROTOTYPE = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROTOTYPE))
 
+import duties  # noqa: E402
 import loader  # noqa: E402
 import main  # noqa: E402
 import schedule  # noqa: E402
@@ -40,7 +41,10 @@ def picture(room_plan):
 def full_seating(dataset):
     data = loader.load(PROTOTYPE / "data" / dataset)
     placements = schedule.make_schedule(data)
-    return data, placements, seat.make_seating(placements, data["rooms"])
+    # The same seating main.py makes: with sections and the teacher check.
+    return data, placements, seat.make_seating(
+        placements, data["rooms"], duties.section_of_student(data),
+        schedule.room_check_for(data))
 
 
 # ------------------------------------------------- small cases, by hand
@@ -49,41 +53,35 @@ S02 = dict(S_ROOM, room_id="S02")
 S03 = dict(S_ROOM, room_id="S03")
 
 
-def test_one_paper_per_room_next_batch_in_next_room():
+def test_one_paper_per_room_best_room_sizes():
     # A has 20 students, B has 10. Rooms: S01, M01, S02. Enough rooms, so no
-    # mixing. A (bigger) goes first:
-    # S01: odd columns 1 and 3 (12 seats): A01..A12.
-    # M01: odd columns 1, 3, 5: A13..A19 down column 1, A20 at the front of
-    #      column 3.
-    # S02: B alone: B01..B06 in column 1, B07..B10 in column 3.
+    # mixing. Fewest rooms first (2026-11-09): A fits in M01 alone (21
+    # seats), B in S01 (12), so 2 rooms. (The old way, rooms.csv order, gave
+    # A S01 + M01 and B S02: 3 rooms.) Rooms come back in rooms.csv order.
+    # M01: odd columns 1, 3, 5: A01..A07 down column 1, then A08..A14,
+    #      then A15..A20.
+    # S01: B alone: B01..B06 in column 1, B07..B10 in column 3.
     plans = seat.seat_slot([paper("A", 20), paper("B", 10)],
                            [S_ROOM, M_ROOM, S02])
 
-    assert [p.papers for p in plans] == [["A"], ["A"], ["B"]]
+    assert [p.room_id for p in plans] == ["S01", "M01"]
+    assert [p.papers for p in plans] == [["B"], ["A"]]
     assert picture(plans[0]) == [
-        "A01 . A07",
-        "A02 . A08",
-        "A03 . A09",
-        "A04 . A10",
-        "A05 . A11",
-        "A06 . A12",
-    ]
-    assert picture(plans[1]) == [
-        "A13 . A20 . . .",
-        "A14 . . . . .",
-        "A15 . . . . .",
-        "A16 . . . . .",
-        "A17 . . . . .",
-        "A18 . . . . .",
-        "A19 . . . . .",
-    ]
-    assert picture(plans[2]) == [
         "B01 . B07",
         "B02 . B08",
         "B03 . B09",
         "B04 . B10",
         "B05 . .",
         "B06 . .",
+    ]
+    assert picture(plans[1]) == [
+        "A01 . A08 . A15 .",
+        "A02 . A09 . A16 .",
+        "A03 . A10 . A17 .",
+        "A04 . A11 . A18 .",
+        "A05 . A12 . A19 .",
+        "A06 . A13 . A20 .",
+        "A07 . A14 . . .",
     ]
 
 
@@ -246,3 +244,103 @@ def test_sections_stay_together_when_a_new_room_would_cost_a_room():
     section_of = {f"A{n:02d}": ("X" if n <= 13 else "Y") for n in range(1, 25)}
     plans = seat.seat_slot([paper("A", 24)], [S_ROOM, S02, S03], section_of)
     assert [p.room_id for p in plans] == ["S01", "S02"]
+
+
+# ------------------------------------------------- best room combination
+# (2026-11-09, Krish: try the combinations of room sizes before seating,
+# fewest rooms first, then fewest empty seats)
+
+M02 = dict(M_ROOM, room_id="M02")
+
+
+def room_ids(plans):
+    return [plan.room_id for plan in plans]
+
+
+def seated(plan):
+    return sum(1 for row in plan.grid for cell in row if cell)
+
+
+def test_45_students_get_one_m_and_two_s_rooms_with_no_empty_seat():
+    # M + M + S would be 54 seats (9 empty). M + S + S is exactly 45.
+    # The chosen rooms are filled in rooms.csv order: S01, S02, then M01.
+    plans = seat.seat_slot([paper("A", 45)], [S_ROOM, S02, S03, M_ROOM, M02])
+    assert room_ids(plans) == ["S01", "S02", "M01"]
+    assert [seated(plan) for plan in plans] == [12, 12, 21]
+
+
+def test_a_few_leftover_students_do_not_get_a_big_room():
+    # 24 students. The old way (rooms.csv order) gave M01 21 and M02 only 3.
+    # Every way needs 2 rooms; 2 S rooms leave no empty seat, so they win.
+    plans = seat.seat_slot([paper("A", 24)], [M_ROOM, M02, S_ROOM, S02])
+    assert room_ids(plans) == ["S01", "S02"]
+
+
+def test_fewest_rooms_come_before_fewest_empty_seats():
+    # 36 students: 3 S rooms have no empty seat, but 2 M rooms are fewer
+    # rooms (fewer teachers on duty), so 2 M rooms.
+    plans = seat.seat_slot([paper("A", 36)], [S_ROOM, S02, S03, M_ROOM, M02])
+    assert room_ids(plans) == ["M01", "M02"]
+
+
+def test_papers_share_the_rooms_of_the_slot():
+    # A 21 and B 21, but only one M room and two S rooms: one of them gets
+    # M01, the other S01 + S02 (both ways are 3 rooms, 3 empty seats).
+    plans = seat.seat_slot([paper("A", 21), paper("B", 21)],
+                           [S_ROOM, S02, M_ROOM])
+    assert room_ids(plans) == ["S01", "S02", "M01"]
+    assert plans[0].papers == plans[1].papers != plans[2].papers
+
+
+def test_roll_order_kept_across_the_chosen_rooms():
+    # The chosen rooms are filled in rooms.csv order, so reading them in
+    # that order (column by column) gives the students in roll order.
+    plans = seat.seat_slot([paper("A", 45)], [S_ROOM, S02, S03, M_ROOM, M02])
+    order = [cell[1] for plan in plans for column in zip(*plan.grid)
+             for cell in column if cell]
+    assert order == sorted(order) and len(order) == 45
+
+
+def test_a_teacher_with_no_room_makes_the_paper_split_by_section():
+    # A: 8 of section X, 8 of section Y. Fewest rooms: all 16 in M01. But
+    # the papers_short check says a teacher of A then has no room (both
+    # sections in the only room), so A is split: X in S01, Y in S02.
+    section_of = {f"A{n:02d}": ("X" if n <= 8 else "Y") for n in range(1, 17)}
+    assert room_ids(seat.seat_slot([paper("A", 16)], [S_ROOM, S02, M_ROOM],
+                                   section_of)) == ["M01"]
+
+    def papers_short(plans):
+        both = any({section_of[cell[1]] for row in plan.grid
+                    for cell in row if cell} == {"X", "Y"} for plan in plans)
+        return {"A"} if both else set()
+
+    plans = seat.seat_slot([paper("A", 16)], [S_ROOM, S02, M_ROOM],
+                           section_of, papers_short)
+    assert room_ids(plans) == ["S01", "S02"]
+    assert {cell[1] for row in plans[0].grid for cell in row if cell} == \
+        {f"A{n:02d}" for n in range(1, 9)}
+
+
+def test_old_way_is_the_backup_when_the_teacher_check_still_fails():
+    # A has one section, so splitting can't help. If the check still says a
+    # teacher has no room, seat_slot() gives the old way (rooms.csv order),
+    # as before 2026-11-09; schedule.py then reports the problem.
+    plans = seat.seat_slot([paper("A", 16)], [S_ROOM, S02, M_ROOM],
+                           None, lambda plans: {"A"})
+    assert room_ids(plans) == ["S01", "S02"]
+
+
+def test_room_options_never_have_a_spare_room():
+    # Every option seats everyone, and no single room could be left out.
+    for students in range(1, 80):
+        for option in seat.room_options(students, [21, 12], [18, 18]):
+            seats = option[0] * 21 + option[1] * 12
+            assert seats >= students
+            if option[0]:
+                assert seats - 21 < students
+            if option[1]:
+                assert seats - 12 < students
+
+
+def test_no_rooms_means_no_best_way():
+    assert seat.seat_best([paper("A", 3)], []) is None

@@ -133,6 +133,25 @@ def one_paper_seats(room):
     return int(room["rows"]) * columns_used
 
 
+def teacher_room_check(papers, limits):
+    """The papers_short function seat.seat_slot() uses for these papers:
+    given RoomPlans, the IDs of papers with a teacher (not a PhD scholar)
+    who has no room they may invigilate (model spec section 10)."""
+    def papers_short(plans):
+        missing = duties.teachers_without_room(
+            papers, plans, limits["teaching"], limits["rank_of"],
+            limits["section_of"])
+        return {paper_id for _, paper_id in missing}
+    return papers_short
+
+
+def room_check_for(data):
+    """For seat.make_seating(): given a slot's papers, its teacher check.
+    main.py uses this so step 5 seats each slot exactly as step 4 checked."""
+    limits = session_limits(data, build_papers(data))
+    return lambda papers: teacher_room_check(papers, limits)
+
+
 def session_problem(papers, rooms, limits):
     """Can one session hold these papers? Returns None if yes, otherwise
     the first check that fails: "seats" (more students than the one-paper
@@ -143,7 +162,8 @@ def session_problem(papers, rooms, limits):
     if students > limits["seat_limit"]:
         return "seats"
     try:
-        plans = seat.seat_slot(papers, rooms, limits["section_of"])
+        plans = seat.seat_slot(papers, rooms, limits["section_of"],
+                               teacher_room_check(papers, limits))
     except NoPlan:
         return "seats"
     if len(plans) * limits["per_room"] > limits["teacher_count"]:
@@ -334,7 +354,8 @@ def make_schedule(data):
     # 3. Last check: a session still waiting for another paper means no plan.
     for slot in sorted(papers_in, key=lambda s: (s[0], sessions.index(s[1]))):
         if papers_in[slot] and problem(slot, []) == "duty room":
-            plans = seat.seat_slot(papers_in[slot], rooms, limits["section_of"])
+            plans = seat.seat_slot(papers_in[slot], rooms, limits["section_of"],
+                                   teacher_room_check(papers_in[slot], limits))
             missing = duties.teachers_without_room(
                 papers_in[slot], plans, limits["teaching"], limits["rank_of"],
                 limits["section_of"])

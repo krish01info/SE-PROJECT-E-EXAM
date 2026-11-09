@@ -216,7 +216,7 @@ M01,M,7,6
 
 - `type` is `S` (small) or `M` (medium).
 - `rows` and `seat_columns` are the room's size. A seat column is one line of seats from the front to the back.
-- Rooms are filled in the order of this file, so put the rooms you'd like used first at the top.
+- The tool picks the mix of room sizes that seats each session in the fewest rooms (then with the fewest empty seats). Among rooms of the same size it uses the ones higher up in this file first, so put the rooms you'd like used first at the top.
 
 With one paper in a room, only every other column is used. So an S room (6 × 3) holds 12 students of one paper, and an M room (7 × 6) holds 21. Two papers in alternate columns fill it: 18 and 42.
 
@@ -291,7 +291,8 @@ same_paper:
 - Every student writing in a slot gets exactly one seat.
 - **Column rule:** two students of the same paper never sit in side-by-side columns. Directly in front or behind is fine.
 - One paper per room where possible. Two papers share a room only when rooms run out, and never three.
-- A paper's students sit in roll order (`student_id`), down each column, then left to right, room after room.
+- Each session uses the fewest rooms it can: before seating, the tool tries the mixes of room sizes and picks the one with the fewest rooms, then the fewest empty seats. For example, 45 students get 1 M room and 2 S rooms (21 + 12 + 12, no empty seat), not 2 M rooms and an S room with 3 students in it.
+- A paper's students sit in roll order (`student_id`), down each column, then left to right, room after room (rooms in the order of `rooms.csv`).
 
 **Duties**
 
@@ -383,7 +384,7 @@ From `prototype1/`:
 python -m pytest tests
 ```
 
-There are 115 tests, one file per stage: validate, schedule, seat, duties, no plan and the checker. The checker's tests break one thing in a `tiny` plan each time and confirm it gets caught.
+There are 124 tests, one file per stage: validate, schedule, seat, duties, no plan and the checker. The checker's tests break one thing in a `tiny` plan each time and confirm it gets caught.
 
 ## 11. How it works
 
@@ -394,7 +395,7 @@ One run goes through these stages in order. Each stage is one file.
 | Load | `loader.py` | Reads the input folder. Only reads, never judges. |
 | Validate | `validate.py` | Checks the data (section 4). First that every file is there and readable, then the rules inside. |
 | Schedule | `schedule.py` | Gives each paper a date and session. Biggest papers first, each on the earliest day that keeps the gap rule and still has seats and teachers. |
-| Seat | `seat.py` | Seats each slot's students in roll order, one paper per room, using every other column. It mixes two papers only if rooms run out. |
+| Seat | `seat.py` | Seats each slot's students in roll order, one paper per room, using every other column. It picks the mix of room sizes that needs the fewest rooms, and splits a paper by section only when a teacher would otherwise have no room. It mixes two papers only if rooms run out. |
 | Duties | `duties.py` | Gives every room its teachers. Each teacher's own-paper duty comes first, then everyone else, spread over the days. |
 | No plan | `main.py`, `errors.py` | Any stage that finds no plan stops the run; `main.py` writes `why.txt`. |
 | Check | `check.py` | Re-reads a finished plan and checks it against the rules, on its own. |

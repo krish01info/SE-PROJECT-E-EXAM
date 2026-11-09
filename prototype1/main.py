@@ -144,7 +144,8 @@ def main(argv=None):
 
         # Step 5: students to seats.
         seating = seat.make_seating(placements, data["rooms"],
-                                    duties.section_of_student(data))
+                                    duties.section_of_student(data),
+                                    schedule.room_check_for(data))
 
         # Step 6: teachers to rooms.
         duty_rows = duties.make_duties(seating, data,

@@ -229,7 +229,8 @@ def test_every_teacher_has_a_room_for_each_paper_they_teach(dataset):
     # (PhD scholars exempt) is left without a room for their paper.
     data, placements = plan(dataset)
     section_of = duties.section_of_student(data)
-    seating = seat.make_seating(placements, data["rooms"], section_of)
+    seating = seat.make_seating(placements, data["rooms"], section_of,
+                                schedule.room_check_for(data))
     limits = schedule.session_limits(data, schedule.build_papers(data))
     for slot, plans in seating.items():
         papers = [p.paper for p in placements if (p.date, p.session) == slot]
