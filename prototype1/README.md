@@ -290,8 +290,9 @@ same_paper:
 
 - Every student writing in a slot gets exactly one seat.
 - **Column rule:** two students of the same paper never sit in side-by-side columns. Directly in front or behind is fine.
-- One paper per room where possible. Two papers share a room only when rooms run out, and never three.
+- One paper per room where possible. Two papers share a room only to join their leftovers (see two points below) or when rooms run out, and never three.
 - Each session uses the fewest rooms it can: before seating, the tool tries the mixes of room sizes and picks the one with the fewest rooms, then the fewest empty seats. For example, 45 students get 1 M room and 2 S rooms (21 + 12 + 12, no empty seat), not 2 M rooms and an S room with 3 students in it.
+- Leftovers are joined: when two papers each end in a part-empty room, their last students share one room (one paper in columns 1, 3, 5, the other in columns 2, 4, 6) and the other room isn't used. The tool joins the pair that fills the shared room best first. Full rooms are never touched, and a join is skipped if it would break roll order or leave a teacher without a room.
 - A paper's students sit in roll order (`student_id`), down each column, then left to right, room after room (rooms in the order of `rooms.csv`).
 
 **Duties**
@@ -395,7 +396,7 @@ One run goes through these stages in order. Each stage is one file.
 | Load | `loader.py` | Reads the input folder. Only reads, never judges. |
 | Validate | `validate.py` | Checks the data (section 4). First that every file is there and readable, then the rules inside. |
 | Schedule | `schedule.py` | Gives each paper a date and session. Biggest papers first, each on the earliest day that keeps the gap rule and still has seats and teachers. |
-| Seat | `seat.py` | Seats each slot's students in roll order, one paper per room, using every other column. It picks the mix of room sizes that needs the fewest rooms, and splits a paper by section only when a teacher would otherwise have no room. It mixes two papers only if rooms run out. |
+| Seat | `seat.py` | Seats each slot's students in roll order, one paper per room, using every other column. It picks the mix of room sizes that needs the fewest rooms, and splits a paper by section only when a teacher would otherwise have no room. It then joins two papers' leftovers in one room where that frees a room, and mixes more only if rooms run out. |
 | Duties | `duties.py` | Gives every room its teachers. Each teacher's own-paper duty comes first, then everyone else, spread over the days. |
 | No plan | `main.py`, `errors.py` | Any stage that finds no plan stops the run; `main.py` writes `why.txt`. |
 | Check | `check.py` | Re-reads a finished plan and checks it against the rules, on its own. |

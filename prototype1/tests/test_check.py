@@ -89,7 +89,8 @@ def test_clean_main_plan(tmp_path, capsys):
     plan = make_plan(tmp_path, main_data)
     code, out = run_check(capsys, plan, main_data)
     assert code == 0, out
-    assert "510 room files" in out     # 596 before the best combination
+    # 596 before the best combination, 510 before leftovers were joined.
+    assert "494 room files" in out
 
 
 def test_checker_writes_nothing(tmp_path, capsys):

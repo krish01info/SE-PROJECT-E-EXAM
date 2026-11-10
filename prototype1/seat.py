@@ -29,6 +29,15 @@ our university does it, and two papers in a room only when needed):
               is split by section and the search runs again. If that can't
               seat the slot, the plain rooms.csv order above is tried
               (seat_alone()).
+  2b. Join.  (2026-11-10, Krish) After point 2, two papers' LEFTOVERS
+              share one room. A paper's leftover is the students in its
+              last room, when that room is part empty. Full rooms are never
+              touched, so as many rooms as possible hold one paper. The
+              pair that leaves the fewest empty seats in the shared room is
+              joined first (bigger leftover in the odd columns, the other
+              in the even columns). A join is made only if roll order is
+              kept and every teacher still has a room (see
+              join_leftovers()).
   3. Mix.     Only if the rooms run out:
               a. Each paper first fills, alone, the rooms it fills COMPLETELY.
                  Its last students, too few to fill a room, are its "leftover".
@@ -401,6 +410,120 @@ def seat_best_for_teachers(papers, rooms, section_of, papers_short):
         must_split |= short
 
 
+# ------------------------------------------------------- join the leftovers
+#
+# Added 2026-11-10 (Krish): one paper per room stays the normal case. Only
+# the leftovers are joined: when two papers each end in a part-empty room,
+# both leftovers go into ONE of those two rooms and the other room is not
+# needed. Example: A has 13 students left in an M room and B has 8 left in
+# another M room -> one M room holds both (A in columns 1, 3, 5 and B in
+# columns 2, 4, 6), and one room with its invigilators is saved.
+
+def students_of(plan, paper_id):
+    """The students of one paper in a room, in the order they were seated
+    (down each column, columns left to right)."""
+    return [cell[1] for column in zip(*plan.grid)
+            for cell in column if cell and cell[0] == paper_id]
+
+
+def leftover_rooms(plans, room_of):
+    """{paper_id: RoomPlan} for every paper whose LAST room holds only that
+    paper and is part empty. `plans` must be in rooms.csv order. A paper
+    whose last room already holds two papers has no leftover."""
+    last_room = {}
+    for plan in plans:
+        for paper_id in plan.papers:
+            last_room[paper_id] = plan          # later rooms overwrite
+    leftovers = {}
+    for paper_id, plan in last_room.items():
+        if len(plan.papers) != 1:
+            continue
+        seated = len(students_of(plan, paper_id))
+        if 0 < seated < alone_seats(room_of[plan.room_id]):
+            leftovers[paper_id] = plan
+    return leftovers
+
+
+def best_join(plans, leftovers, room_of, position, refused):
+    """The best pair of leftovers to put in one room, or None if no pair
+    can be joined. Returns (first_id, second_id, shared RoomPlan): the
+    first paper is the bigger leftover (odd columns), and the shared room
+    is one of the two leftover rooms.
+
+    Best = fewest empty seats in the shared room, then the room higher up
+    in rooms.csv, then the paper IDs (so the same input always gives the
+    same plan). Pairs in `refused` are skipped."""
+    sizes = {paper_id: len(students_of(plan, paper_id))
+             for paper_id, plan in leftovers.items()}
+    # Biggest leftover first, ties by paper ID.
+    order = sorted(leftovers, key=lambda paper_id: (-sizes[paper_id],
+                                                    paper_id))
+    best = None
+    for index, first_id in enumerate(order):
+        for second_id in order[index + 1:]:
+            if (first_id, second_id) in refused:
+                continue
+            for shared in (leftovers[first_id], leftovers[second_id]):
+                room = room_of[shared.room_id]
+                if (sizes[first_id] > alone_seats(room)
+                        or sizes[second_id] > partner_seats(room)):
+                    continue                    # they don't both fit
+                # Roll order: the paper that moves in must have all its
+                # other rooms before this room in rooms.csv.
+                moving_id = second_id if shared is leftovers[first_id] \
+                    else first_id
+                if any(moving_id in plan.papers
+                       and plan is not leftovers[moving_id]
+                       and position[plan.room_id] > position[shared.room_id]
+                       for plan in plans):
+                    continue
+                empty = (alone_seats(room) + partner_seats(room)
+                         - sizes[first_id] - sizes[second_id])
+                rank = (empty, position[shared.room_id], first_id, second_id)
+                if best is None or rank < best[0]:
+                    best = (rank, first_id, second_id, shared)
+    return None if best is None else best[1:]
+
+
+def join_leftovers(plans, rooms, papers_short=None):
+    """Point 2b: put two papers' leftovers in one room, wherever that frees
+    a room. `plans` are one-paper RoomPlans of a slot. Returns the new list
+    of RoomPlans in rooms.csv order (the same plans if nothing can be
+    joined).
+
+    Rules kept: a room never holds a third paper (a paper's leftover is
+    joined once); each paper keeps its own columns; roll order; and if
+    `papers_short` says a teacher would have no room after a join, that
+    join is not made."""
+    room_of = {room["room_id"]: room for room in rooms}
+    position = {room["room_id"]: index for index, room in enumerate(rooms)}
+    plans = sorted(plans, key=lambda plan: position[plan.room_id])
+    if any(len(plan.papers) != 1 for plan in plans):
+        return plans                # only for one-paper seatings
+    if papers_short and papers_short(plans):
+        return plans                # already a problem: change nothing
+
+    refused = set()                 # pairs the teacher check said no to
+    while True:
+        leftovers = leftover_rooms(plans, room_of)
+        choice = best_join(plans, leftovers, room_of, position, refused)
+        if choice is None:
+            return plans
+        first_id, second_id, shared = choice
+        joined = seat_room(room_of[shared.room_id], [
+            [first_id, students_of(leftovers[first_id], first_id)],
+            [second_id, students_of(leftovers[second_id], second_id)]])
+        trial = [plan for plan in plans
+                 if plan is not leftovers[first_id]
+                 and plan is not leftovers[second_id]]
+        trial.append(joined)
+        trial.sort(key=lambda plan: position[plan.room_id])
+        if papers_short and papers_short(trial):
+            refused.add((first_id, second_id))
+            continue
+        plans = trial
+
+
 def seat_slot(papers, rooms, section_of=None, papers_short=None):
     """Seat one slot. `papers` are the schedule.Paper objects written in it.
     `section_of` is {student_id: section_id} (optional; tests without it get
@@ -412,16 +535,17 @@ def seat_slot(papers, rooms, section_of=None, papers_short=None):
 
     Tries, in order: the best combination of room sizes (fewest rooms),
     then one paper per room in plain rooms.csv order (the old way), then
-    mixing."""
+    mixing. After either one-paper way, two papers' leftovers are joined
+    in one room where that frees a room (join_leftovers())."""
     plans, short = seat_best_for_teachers(papers, rooms, section_of,
                                           papers_short)
     if plans is not None and not short:
-        return plans
+        return join_leftovers(plans, rooms, papers_short)
     old_way = seat_alone(papers, rooms, section_of)
     if old_way is not None:
         # The best way left a teacher without a room (or couldn't seat the
         # slot): the old way may still work. If not, schedule.py reports it.
-        return old_way
+        return join_leftovers(old_way, rooms, papers_short)
     if plans is not None:
         return plans
 

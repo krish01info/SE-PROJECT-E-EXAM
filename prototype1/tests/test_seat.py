@@ -1,6 +1,6 @@
 """Step 5 tests: the seating keeps the rules of model spec section 9: one
-paper per room, two papers in a room only when the rooms run out (redone
-2026-11-03).
+paper per room; two papers in a room only for two papers' leftovers
+(2026-11-10) or when the rooms run out (redone 2026-11-03).
 
 Run from prototype1/:
 
@@ -54,14 +54,15 @@ S03 = dict(S_ROOM, room_id="S03")
 
 
 def test_one_paper_per_room_best_room_sizes():
-    # A has 20 students, B has 10. Rooms: S01, M01, S02. Enough rooms, so no
+    # A has 21 students, B has 12. Rooms: S01, M01, S02. Enough rooms, so no
     # mixing. Fewest rooms first (2026-11-09): A fits in M01 alone (21
     # seats), B in S01 (12), so 2 rooms. (The old way, rooms.csv order, gave
     # A S01 + M01 and B S02: 3 rooms.) Rooms come back in rooms.csv order.
+    # Both rooms are full, so there is no leftover to join (2026-11-10).
     # M01: odd columns 1, 3, 5: A01..A07 down column 1, then A08..A14,
-    #      then A15..A20.
-    # S01: B alone: B01..B06 in column 1, B07..B10 in column 3.
-    plans = seat.seat_slot([paper("A", 20), paper("B", 10)],
+    #      then A15..A21.
+    # S01: B alone: B01..B06 in column 1, B07..B12 in column 3.
+    plans = seat.seat_slot([paper("A", 21), paper("B", 12)],
                            [S_ROOM, M_ROOM, S02])
 
     assert [p.room_id for p in plans] == ["S01", "M01"]
@@ -71,8 +72,8 @@ def test_one_paper_per_room_best_room_sizes():
         "B02 . B08",
         "B03 . B09",
         "B04 . B10",
-        "B05 . .",
-        "B06 . .",
+        "B05 . B11",
+        "B06 . B12",
     ]
     assert picture(plans[1]) == [
         "A01 . A08 . A15 .",
@@ -81,7 +82,7 @@ def test_one_paper_per_room_best_room_sizes():
         "A04 . A11 . A18 .",
         "A05 . A12 . A19 .",
         "A06 . A13 . A20 .",
-        "A07 . A14 . . .",
+        "A07 . A14 . A21 .",
     ]
 
 
@@ -166,13 +167,27 @@ def test_column_rule_and_at_most_two_papers_per_room(dataset):
 
 
 @pytest.mark.parametrize("dataset", ["tiny", "main"])
-def test_mixed_rooms_only_when_one_paper_per_room_does_not_fit(dataset):
+def test_a_shared_room_holds_only_the_last_students_of_two_papers(dataset):
+    # Changed 2026-11-10 (was: mixed rooms only when one paper per room does
+    # not fit). Where the rooms don't run out, a room with two papers is two
+    # leftovers joined: each paper is in at most one shared room, and the
+    # students there are the last ones of that paper in roll order.
     data, placements, seating = full_seating(dataset)
     for slot, plans in seating.items():
-        if any(len(plan.papers) == 2 for plan in plans):
-            papers = [p.paper for p in placements
-                      if (p.date, p.session) == slot]
-            assert seat.seat_alone(papers, data["rooms"]) is None, slot
+        papers = {p.paper.paper_id: p.paper for p in placements
+                  if (p.date, p.session) == slot}
+        if seat.seat_alone(list(papers.values()), data["rooms"]) is None:
+            continue            # rooms ran out: the mixing rules apply
+        shared_rooms = {}
+        for plan in plans:
+            if len(plan.papers) != 2:
+                continue
+            for paper_id in plan.papers:
+                shared_rooms[paper_id] = shared_rooms.get(paper_id, 0) + 1
+                here = seat.students_of(plan, paper_id)
+                everyone = sorted(papers[paper_id].students)
+                assert here == everyone[-len(here):], (slot, plan.room_id)
+        assert all(count == 1 for count in shared_rooms.values()), slot
 
 
 @pytest.mark.parametrize("dataset", ["tiny", "main"])
@@ -344,3 +359,114 @@ def test_room_options_never_have_a_spare_room():
 
 def test_no_rooms_means_no_best_way():
     assert seat.seat_best([paper("A", 3)], []) is None
+
+
+# ------------------------------------------------- joining the leftovers
+#
+# Added 2026-11-10 (Krish): one paper per room stays the normal case; only
+# two papers' leftovers (part-empty last rooms) are joined in one room.
+
+M02 = dict(M_ROOM, room_id="M02")
+M03 = dict(M_ROOM, room_id="M03")
+M04 = dict(M_ROOM, room_id="M04")
+
+
+def test_two_leftovers_share_one_room():
+    # A 34 = M01 full (21) + 13 left. B 29 = one full M room (21) + 8 left.
+    # Alone that is 4 rooms. The leftovers 13 and 8 share ONE room, so 3
+    # rooms. The shared room is M04 (after both papers' full rooms, so roll
+    # order is kept): A, the bigger leftover, in columns 1, 3, 5 and B in
+    # columns 2, 4, 6.
+    plans = seat.seat_slot([paper("A", 34), paper("B", 29)],
+                           [M_ROOM, M02, M03, M04])
+
+    assert room_ids(plans) == ["M01", "M03", "M04"]
+    assert [p.papers for p in plans] == [["A"], ["B"], ["A", "B"]]
+    assert picture(plans[2]) == [
+        "A22 B22 A29 B29 . .",
+        "A23 B23 A30 . . .",
+        "A24 B24 A31 . . .",
+        "A25 B25 A32 . . .",
+        "A26 B26 A33 . . .",
+        "A27 B27 A34 . . .",
+        "A28 B28 . . . .",
+    ]
+
+
+def test_the_pair_that_fills_the_room_best_is_joined_first():
+    # Leftovers: A 20, C 19, B 5 (each paper is one part-empty M room).
+    # A + C leave 3 seats empty, A + B 17, C + B 18: so A and C are joined.
+    # B has no partner left and stays alone.
+    plans = seat.seat_slot([paper("A", 20), paper("B", 5), paper("C", 19)],
+                           [M_ROOM, M02, M03])
+
+    assert [p.papers for p in plans] == [["A", "C"], ["B"]]
+
+
+def test_in_an_s_room_the_bigger_leftover_takes_the_two_odd_columns():
+    # S room: 12 seats in columns 1 and 3, 6 seats in column 2. A 10 and
+    # B 6 fit together in S01 (16 of 18 seats).
+    plans = seat.seat_slot([paper("A", 10), paper("B", 6)], [S_ROOM, S02])
+
+    assert room_ids(plans) == ["S01"]
+    assert picture(plans[0]) == [
+        "A01 B01 A07",
+        "A02 B02 A08",
+        "A03 B03 A09",
+        "A04 B04 A10",
+        "A05 B05 .",
+        "A06 B06 .",
+    ]
+
+
+def test_full_rooms_are_never_joined():
+    # Both rooms are full with one paper: nothing is a leftover.
+    plans = seat.seat_slot([paper("A", 21), paper("B", 21)], [M_ROOM, M02])
+    assert [p.papers for p in plans] == [["A"], ["B"]]
+
+
+def test_a_leftover_with_no_partner_stays_alone():
+    # A fills M01. B's 5 students are the only leftover: no one to join.
+    plans = seat.seat_slot([paper("A", 21), paper("B", 5)], [M_ROOM, M02])
+    assert [p.papers for p in plans] == [["A"], ["B"]]
+
+
+def test_one_paper_alone_in_a_slot_is_never_joined_with_itself():
+    plans = seat.seat_slot([paper("A", 30)], [M_ROOM, M02])
+    assert [p.papers for p in plans] == [["A"], ["A"]]
+
+
+def test_a_joined_room_never_gets_a_third_paper():
+    # Three leftovers of 5: two share a room, the third stays alone.
+    plans = seat.seat_slot([paper("A", 5), paper("B", 5), paper("C", 5)],
+                           [M_ROOM, M02, M03])
+    assert sorted(len(p.papers) for p in plans) == [1, 2]
+
+
+def test_no_join_when_a_teacher_would_have_no_room():
+    # The teacher check says no to every room with two papers, so the
+    # leftovers stay in their own rooms.
+    def papers_short(plans):
+        return {"A"} if any(len(p.papers) == 2 for p in plans) else set()
+
+    plans = seat.seat_slot([paper("A", 34), paper("B", 29)],
+                           [M_ROOM, M02, M03, M04], None, papers_short)
+    assert [p.papers for p in plans] == [["A"], ["A"], ["B"], ["B"]]
+
+
+def test_no_join_that_would_break_roll_order():
+    # A 5 sits in S01, B 26 in S02 (12) + M01... the only room both
+    # leftovers fit in must come after the other paper's rooms. Whatever is
+    # joined, each paper still reads in roll order across the rooms.
+    plans = seat.seat_slot([paper("A", 5), paper("B", 26)],
+                           [S_ROOM, S02, M_ROOM, M02])
+    for paper_id in ("A", "B"):
+        order = [cell[1] for plan in plans for column in zip(*plan.grid)
+                 for cell in column if cell and cell[0] == paper_id]
+        assert order == sorted(order)
+    assert sum(1 for plan in plans for row in plan.grid
+               for cell in row if cell) == 31
+
+
+def test_join_leftovers_with_no_rooms_or_plans():
+    assert seat.join_leftovers([], []) == []
