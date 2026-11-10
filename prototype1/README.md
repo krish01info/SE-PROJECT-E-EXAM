@@ -58,6 +58,7 @@ python main.py data/tiny
 Input OK: 2 sections, 16 students, 8 course codes (7 papers), 3 rooms, 9 teachers.
 Timetable basis: biggest papers first; each paper goes into the session where it adds the fewest rooms (on a tie, the session with fewer students).
 Seating basis: one paper per room, with the mix of room sizes that needs the fewest rooms; 6 rooms hold one paper and 1 holds two (two papers' leftovers joined, or mixed where the rooms ran out).
+If a word in these lines is not clear, read terms.md in the plan folder.
 Scheduled 7 papers on 3 days, 2026-11-02 to 2026-11-06.
 Fullest session: 2026-11-02 morning, 16 of 45 seats (29 left).
 Seating: 7 room files (1 with two papers). Most rooms in one slot: 3 of 3 (2026-11-06 morning).
@@ -91,6 +92,7 @@ output/2026-11-05_15-55-57/
 ├── schedule.csv                          the date sheet
 ├── duties.csv                            who invigilates which room
 ├── basis.txt                             on what basis the plan was made
+├── terms.md                              what the words of the plan mean
 └── daywise_seating_plans/
     └── 2026-11-02/
         └── morning/
@@ -106,7 +108,9 @@ date,session,paper_id,course_codes,students
 2026-11-04,morning,CSE2002,CSE2002,8
 ```
 
-**`basis.txt`** has two lines, the same two the tool prints: on what basis the timetable was made and on what basis the seating was made. If the tool had to fall back to another way of choosing sessions, the first line says which way was tried first and could not place every paper.
+**`basis.txt`** has two lines, the same two the tool prints: on what basis the timetable was made and on what basis the seating was made. If the tool had to fall back to another way of choosing sessions, the first line says which way was tried first and could not place every paper. A third line points to `terms.md`.
+
+**`terms.md`** explains in simple words, with small examples, every term the plan uses: fewest rooms, the session with fewer students, the earlier day, leftovers, the room files, duties and more. It is a copy of `docs/terms.md`.
 
 **`duties.csv`** has one row per teacher per room.
 

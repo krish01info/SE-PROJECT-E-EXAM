@@ -51,9 +51,11 @@ PHD = "PHD"
 SCHEDULE_COLUMNS = ["date", "session", "paper_id", "course_codes", "students"]
 DUTY_COLUMNS = ["date", "session", "room_id", "teacher_id"]
 SEATING_FOLDER = "daywise_seating_plans"
-# basis.txt (2026-11-10) only says on what basis the plan was made. It is
-# allowed in a plan folder but not checked, and a plan without it is fine.
-PLAN_ITEMS = ["schedule.csv", "duties.csv", SEATING_FOLDER, "basis.txt"]
+# basis.txt (on what basis the plan was made) and terms.md (what the words
+# mean), both 2026-11-10, are allowed in a plan folder but not checked, and
+# a plan without them is fine.
+PLAN_ITEMS = ["schedule.csv", "duties.csv", SEATING_FOLDER, "basis.txt",
+              "terms.md"]
 
 # Every rule the checker knows, in the order problems are printed.
 RULES = [
@@ -376,7 +378,7 @@ def read_plan(folder, data, problems):
         if item.name not in PLAN_ITEMS:
             problems.add("output files",
                          f"{item.name}: a plan folder holds only "
-                         f"schedule.csv, duties.csv, basis.txt and "
+                         f"schedule.csv, duties.csv, basis.txt, terms.md and "
                          f"{SEATING_FOLDER}/.")
     schedule_rows = read_plan_table(folder, "schedule.csv", SCHEDULE_COLUMNS,
                                     data["sessions"], problems)

@@ -6,7 +6,8 @@ Run from prototype1/:
 
 Exit codes (model spec section 4):
     0  a plan was written: schedule.csv, the room CSVs, duties.csv and
-       basis.txt (two lines: on what basis the plan was made)
+       basis.txt (on what basis the plan was made) and terms.md (what
+       the words mean)
     1  the input is invalid; every problem is printed
     2  no plan is possible; the reason is printed and written to why.txt,
        the only file in the new output folder (model spec section 12)
@@ -18,6 +19,7 @@ Built so far: step 3 (load and validate), step 4 (schedule), step 5
 import argparse
 import csv
 import datetime
+import shutil
 import sys
 from pathlib import Path
 
@@ -29,6 +31,11 @@ import validate
 from errors import NoPlan
 
 SCHEDULE_COLUMNS = ["date", "session", "paper_id", "course_codes", "students"]
+# The page that explains the words of the plan (Krish, 2026-11-10). Each plan
+# folder gets a copy, so whoever gets the folder can read it.
+TERMS_FILE = Path(__file__).resolve().parent / "docs" / "terms.md"
+TERMS_LINE = ("If a word in these lines is not clear, read terms.md in the "
+              "plan folder.")
 DUTY_COLUMNS = ["date", "session", "room_id", "teacher_id"]
 
 
@@ -163,6 +170,9 @@ def main(argv=None):
     # On what basis the plan was made: on the screen and in basis.txt, so
     # the people who get the folder can read it too (Krish, 2026-11-10).
     basis = [schedule.basis_line(report), seat.basis_line(seating)]
+    if TERMS_FILE.is_file():
+        shutil.copyfile(TERMS_FILE, folder / "terms.md")
+        basis.append(TERMS_LINE)
     (folder / "basis.txt").write_text("\n".join(basis) + "\n",
                                       encoding="utf-8")
     for line in basis:

@@ -379,14 +379,30 @@ def test_main_writes_basis_txt_and_prints_the_same_two_lines(tmp_path, capsys):
     files = list(tmp_path.glob("*/basis.txt"))
     assert len(files) == 1
     lines = files[0].read_text(encoding="utf-8").splitlines()
-    assert len(lines) == 2
+    assert len(lines) == 3
     assert lines[0].startswith("Timetable basis: ")
     assert lines[1] == ("Seating basis: one paper per room, with the mix of "
                         "room sizes that needs the fewest rooms; 6 rooms hold "
                         "one paper and 1 holds two (two papers' leftovers "
                         "joined, or mixed where the rooms ran out).")
+    assert lines[2] == main.TERMS_LINE
     for line in lines:
         assert line in out
+
+
+def test_every_plan_folder_gets_terms_md(tmp_path, capsys):
+    # Krish (2026-11-10): a page that explains the words of the plan, and
+    # the output says to read it if a word is not clear.
+    code = main.main([str(PROTOTYPE / "data" / "tiny"),
+                      "--output", str(tmp_path)])
+    assert code == 0, capsys.readouterr().out
+    copy = next(tmp_path.glob("*/terms.md")).read_text(encoding="utf-8")
+    assert copy == main.TERMS_FILE.read_text(encoding="utf-8")
+    for word in ("Fewest rooms", "On a tie, the session with fewer students",
+                 "On a tie, the earlier day", "Tried first, but could not "
+                 "place every paper", "Leftover", "Two papers' leftovers "
+                 "joined", "Mixed where the rooms ran out"):
+        assert word in copy, word
 
 
 @pytest.mark.parametrize("dataset", ["tiny", "main"])
