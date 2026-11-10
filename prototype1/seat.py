@@ -591,6 +591,22 @@ def make_seating(placements, rooms, section_of=None, teacher_check_for=None):
     return seating
 
 
+def basis_line(seating):
+    """One line saying on what basis the seating was made (Krish,
+    2026-11-10). `seating` is what make_seating() returns."""
+    plans = [plan for room_plans in seating.values() for plan in room_plans]
+    two = sum(1 for plan in plans if len(plan.papers) == 2)
+    line = ("Seating basis: one paper per room, with the mix of room sizes "
+            "that needs the fewest rooms; ")
+    if two == 0:
+        return line + f"all {len(plans)} rooms hold one paper."
+    one = len(plans) - two
+    one_text = "1 room holds" if one == 1 else f"{one} rooms hold"
+    two_text = "1 holds" if two == 1 else f"{two} hold"
+    return line + (f"{one_text} one paper and {two_text} two (two papers' "
+                   f"leftovers joined, or mixed where the rooms ran out).")
+
+
 def cell_text(cell):
     """What a room CSV cell shows: 'PAPER:STUDENT', or blank for an empty
     seat (model spec section 11)."""

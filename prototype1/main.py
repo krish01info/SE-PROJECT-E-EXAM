@@ -5,7 +5,8 @@ Run from prototype1/:
     python main.py data/tiny
 
 Exit codes (model spec section 4):
-    0  a plan was written: schedule.csv, the room CSVs and duties.csv
+    0  a plan was written: schedule.csv, the room CSVs, duties.csv and
+       basis.txt (two lines: on what basis the plan was made)
     1  the input is invalid; every problem is printed
     2  no plan is possible; the reason is printed and written to why.txt,
        the only file in the new output folder (model spec section 12)
@@ -134,7 +135,8 @@ def main(argv=None):
     # finds that no plan is possible, the reason goes to why.txt.
     try:
         # Step 4: papers to dates and sessions.
-        placements = schedule.make_schedule(data)
+        report = {}
+        placements = schedule.make_schedule(data, report)
         if not placements:
             # Backup: validation already stops an empty courses.csv.
             raise NoPlan("No plan possible.\n"
@@ -157,6 +159,14 @@ def main(argv=None):
     write_schedule(placements, folder / "schedule.csv")
     room_files = write_seating(seating, folder)
     write_duties(duty_rows, folder / "duties.csv")
+
+    # On what basis the plan was made: on the screen and in basis.txt, so
+    # the people who get the folder can read it too (Krish, 2026-11-10).
+    basis = [schedule.basis_line(report), seat.basis_line(seating)]
+    (folder / "basis.txt").write_text("\n".join(basis) + "\n",
+                                      encoding="utf-8")
+    for line in basis:
+        print(line)
 
     days = sorted({placement.date for placement in placements})
     print(f"Scheduled {len(placements)} papers on {len(days)} days, "

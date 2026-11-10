@@ -56,6 +56,8 @@ python main.py data/tiny
 
 ```
 Input OK: 2 sections, 16 students, 8 course codes (7 papers), 3 rooms, 9 teachers.
+Timetable basis: biggest papers first; each paper goes into the session where it adds the fewest rooms (on a tie, the session with fewer students).
+Seating basis: one paper per room, with the mix of room sizes that needs the fewest rooms; 6 rooms hold one paper and 1 holds two (two papers' leftovers joined, or mixed where the rooms ran out).
 Scheduled 7 papers on 3 days, 2026-11-02 to 2026-11-06.
 Fullest session: 2026-11-02 morning, 16 of 45 seats (29 left).
 Seating: 7 room files (1 with two papers). Most rooms in one slot: 3 of 3 (2026-11-06 morning).
@@ -88,6 +90,7 @@ Every run makes a new folder named by the time of the run, so old plans are neve
 output/2026-11-05_15-55-57/
 ├── schedule.csv                          the date sheet
 ├── duties.csv                            who invigilates which room
+├── basis.txt                             on what basis the plan was made
 └── daywise_seating_plans/
     └── 2026-11-02/
         └── morning/
@@ -102,6 +105,8 @@ date,session,paper_id,course_codes,students
 2026-11-02,morning,CSE2001,CSE2001;CSE2003,16
 2026-11-04,morning,CSE2002,CSE2002,8
 ```
+
+**`basis.txt`** has two lines, the same two the tool prints: on what basis the timetable was made and on what basis the seating was made. If the tool had to fall back to another way of choosing sessions, the first line says which way was tried first and could not place every paper.
 
 **`duties.csv`** has one row per teacher per room.
 
@@ -285,6 +290,7 @@ same_paper:
 - Exams only on exam days: inside the window, on an exam weekday, not a holiday.
 - **Gap rule:** a student's two exams are at least `min_gap_days` apart. With 2, nobody has two exams on one day or on two days in a row. Friday then Monday is fine.
 - Codes in one `same_paper` group are written in the same slot.
+- The tool tries to use as few rooms as it can, because every room needs invigilators: each paper goes into the session where it adds the fewest rooms (on a tie, the session with fewer students). So papers are spread over the window; they don't all sit on the first days. If the tool can't place every paper this way, it tries the earlier day on a tie, and last the earliest day for every paper. The `Timetable basis` line (on the screen and in `basis.txt`) says which way made the schedule and which ways were tried first. The plan is valid either way.
 
 **Seats**
 
@@ -395,7 +401,7 @@ One run goes through these stages in order. Each stage is one file.
 |---|---|---|
 | Load | `loader.py` | Reads the input folder. Only reads, never judges. |
 | Validate | `validate.py` | Checks the data (section 4). First that every file is there and readable, then the rules inside. |
-| Schedule | `schedule.py` | Gives each paper a date and session. Biggest papers first, each on the earliest day that keeps the gap rule and still has seats and teachers. |
+| Schedule | `schedule.py` | Gives each paper a date and session. Biggest papers first, each in the session where it adds the fewest rooms, keeping the gap rule and the limits on seats and teachers. If that can't place every paper it falls back to the earliest day, and the basis line says so. |
 | Seat | `seat.py` | Seats each slot's students in roll order, one paper per room, using every other column. It picks the mix of room sizes that needs the fewest rooms, and splits a paper by section only when a teacher would otherwise have no room. It then joins two papers' leftovers in one room where that frees a room, and mixes more only if rooms run out. |
 | Duties | `duties.py` | Gives every room its teachers. Each teacher's own-paper duty comes first, then everyone else, spread over the days. |
 | No plan | `main.py`, `errors.py` | Any stage that finds no plan stops the run; `main.py` writes `why.txt`. |

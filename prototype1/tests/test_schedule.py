@@ -100,8 +100,10 @@ def test_exam_days_skip_weekends_and_holidays():
 
 
 def test_tiny_schedule_worked_out_by_hand():
-    # Biggest first, earliest day; a session waiting for another paper is
-    # filled first. Ties in size go by paper ID.
+    # Biggest first; a session waiting for another paper is filled first.
+    # Ties in size go by paper ID. (Since 2026-11-10 a paper goes where it
+    # adds the fewest rooms; on tiny that gives the same schedule as the
+    # old earliest-day way, and no fallback note.)
     # CSE2001 (16): 2 Nov morning; each section gets its own room, so both
     #   its teachers have a room. Everyone writes it, so 3 and 5 Nov are out.
     # CSE2002 (8): T004 teaches all of it, so alone it can't work: it waits
@@ -221,6 +223,170 @@ def test_a_session_must_really_be_seatable_not_just_counted():
               "teaching": {}, "rank_of": {}, "section_of": None}
     assert not schedule.session_fits(papers, rooms, limits)
     assert schedule.session_fits(papers[:2], rooms, limits)
+
+
+# ------------------------------------------- choosing a session (2026-11-10)
+#
+# Krish: fewer rooms means fewer duties, so teachers can check papers and do
+# other work. A paper goes into the session where it adds the fewest rooms.
+
+M01 = {"room_id": "M01", "type": "M", "rows": "7", "seat_columns": "6"}
+S01 = {"room_id": "S01", "type": "S", "rows": "6", "seat_columns": "3"}
+S02 = {"room_id": "S02", "type": "S", "rows": "6", "seat_columns": "3"}
+NO_TEACHERS = {"per_room": 2, "teacher_count": 99, "teaching": {},
+               "rank_of": {}, "section_of": None}
+DAY_1 = datetime.date(2026, 11, 2)
+DAY_2 = datetime.date(2026, 11, 3)
+
+
+def placed_by(way, sizes, rooms, sessions):
+    """Place made-up papers (no shared students, so no clashes) on two exam
+    days in one way. Returns {paper_id: (date, session)}."""
+    papers = {name: schedule.Paper(name, [name],
+                                   {f"{name}{n:02d}" for n in range(count)})
+              for name, count in sizes}
+    limits = dict(NO_TEACHERS, seat_limit=sum(
+        schedule.one_paper_seats(room) for room in rooms))
+    placements = schedule.place_papers(
+        way, papers, limits, schedule.build_clashes(papers), [DAY_1, DAY_2],
+        sessions, 2, rooms, {})
+    return {p.paper.paper_id: (p.date, p.session) for p in placements}
+
+
+def test_a_paper_goes_where_it_adds_the_fewest_rooms():
+    # Rooms: one M (21 seats for one paper) and two S (12 each). Papers A,
+    # B and C have 21 students each. A and B take 2 Nov morning and evening
+    # (the M room each, 1 room). C on 2 Nov would need both S rooms (2 more
+    # rooms); on 3 Nov it gets the M room (1 more room). So C goes to 3 Nov:
+    # 3 rooms in all.
+    sizes = [("A", 21), ("B", 21), ("C", 21)]
+    for way in (schedule.FEWEST_ROOMS_FEWER_STUDENTS,
+                schedule.FEWEST_ROOMS_EARLIER_DAY):
+        assert placed_by(way, sizes, [M01, S01, S02],
+                         ["morning", "evening"]) == {
+            "A": (DAY_1, "morning"), "B": (DAY_1, "evening"),
+            "C": (DAY_2, "morning")}
+
+
+def test_the_old_way_still_takes_the_earliest_day():
+    # Same papers, the old way (the last fallback): C takes the earliest
+    # day it fits, 2 Nov morning, in the two S rooms: 4 rooms in all.
+    sizes = [("A", 21), ("B", 21), ("C", 21)]
+    assert placed_by(schedule.EARLIEST_DAY, sizes, [M01, S01, S02],
+                     ["morning", "evening"]) == {
+        "A": (DAY_1, "morning"), "B": (DAY_1, "evening"),
+        "C": (DAY_1, "morning")}
+
+
+def test_tie_in_rooms_fewer_students_or_earlier_day():
+    # One session a day. A (21) is on 2 Nov. B (5) adds 1 room on either
+    # day: a tie. Way a takes the session with fewer students (3 Nov, empty:
+    # less crowd at the same time). Way b takes the earlier day (2 Nov).
+    sizes = [("A", 21), ("B", 5)]
+    rooms = [M01, S01]
+    assert placed_by(schedule.FEWEST_ROOMS_FEWER_STUDENTS, sizes, rooms,
+                     ["morning"])["B"] == (DAY_2, "morning")
+    assert placed_by(schedule.FEWEST_ROOMS_EARLIER_DAY, sizes, rooms,
+                     ["morning"])["B"] == (DAY_1, "morning")
+
+
+def test_session_check_gives_the_problem_and_the_room_count():
+    papers = [schedule.Paper(name, [name],
+                             {f"{name}{n:02d}" for n in range(count)})
+              for name, count in (("A", 13), ("B", 5), ("C", 3))]
+    limits = dict(NO_TEACHERS, seat_limit=24)
+    assert schedule.session_check([], [S01, S02], limits) == (None, 0)
+    assert schedule.session_check(papers[:2], [S01, S02], limits) == (None, 2)
+    assert schedule.session_check(papers, [S01, S02], limits) == ("seats", 0)
+
+
+def test_the_first_way_works_on_tiny_and_the_basis_says_so():
+    data = loader.load(PROTOTYPE / "data" / "tiny")
+    report = {}
+    schedule.make_schedule(data, report)
+    assert report == {"way": schedule.FEWEST_ROOMS_FEWER_STUDENTS,
+                      "failed": []}
+    line = schedule.basis_line(report)
+    assert line.startswith("Timetable basis: biggest papers first")
+    assert "on a tie, the session with fewer students" in line
+    assert "Tried first" not in line
+
+
+def test_main_falls_back_to_the_next_way_and_says_so():
+    # On main, "fewest rooms, then fewer students" can't place every paper
+    # (the gap rule leaves ECE2003 no day), so the next way makes the plan
+    # and one note says so. (Krish: we have to make the plan, and the tool
+    # should tell us it fell back.)
+    data = loader.load(PROTOTYPE / "data" / "main")
+    report = {}
+    placements = schedule.make_schedule(data, report)
+    assert len(placements) == 56
+    assert report == {"way": schedule.FEWEST_ROOMS_EARLIER_DAY,
+                      "failed": [schedule.FEWEST_ROOMS_FEWER_STUDENTS]}
+    line = schedule.basis_line(report)
+    assert "on a tie, the earlier day" in line
+    assert ("Tried first, but could not place every paper: "
+            f'"{schedule.FEWEST_ROOMS_FEWER_STUDENTS}".') in line
+
+
+def test_two_ways_fail_then_the_old_way_makes_the_plan(monkeypatch, tmp_path,
+                                                       capsys):
+    # Pretend both new ways can't place every paper: the old way is used,
+    # the plan is the old plan, and main.py says so on the screen and in
+    # basis.txt.
+    real = schedule.place_papers
+
+    def only_the_old_way(way, *args):
+        if way != schedule.EARLIEST_DAY:
+            raise schedule.NoPlan("No plan possible.")
+        return real(way, *args)
+
+    monkeypatch.setattr(schedule, "place_papers", only_the_old_way)
+    code = main.main([str(PROTOTYPE / "data" / "tiny"),
+                      "--output", str(tmp_path)])
+    out = capsys.readouterr().out
+    assert code == 0, out
+    assert "Timetable basis: biggest papers first; each paper goes on the " \
+           "earliest day it fits" in out
+    assert (f'Tried first, but could not place every paper: '
+            f'"{schedule.FEWEST_ROOMS_FEWER_STUDENTS}" and '
+            f'"{schedule.FEWEST_ROOMS_EARLIER_DAY}".') in out
+    assert len(list(tmp_path.glob("*/schedule.csv"))) == 1
+    basis = next(tmp_path.glob("*/basis.txt")).read_text(encoding="utf-8")
+    assert "Tried first, but could not place every paper" in basis
+
+
+def test_no_plan_only_when_the_last_way_fails_too(monkeypatch):
+    def nothing_works(way, *args):
+        raise schedule.NoPlan(f"No plan possible.\nway: {way}")
+
+    monkeypatch.setattr(schedule, "place_papers", nothing_works)
+    data = loader.load(PROTOTYPE / "data" / "tiny")
+    report = {}
+    with pytest.raises(schedule.NoPlan) as error:
+        schedule.make_schedule(data, report)
+    assert schedule.EARLIEST_DAY in str(error.value)   # the last way's reason
+    assert report == {}
+
+
+def test_main_writes_basis_txt_and_prints_the_same_two_lines(tmp_path, capsys):
+    # Krish (2026-11-10): the tool states on what basis the timetable and
+    # the seating plan were made, on the screen and in the plan folder.
+    code = main.main([str(PROTOTYPE / "data" / "tiny"),
+                      "--output", str(tmp_path)])
+    out = capsys.readouterr().out
+    assert code == 0, out
+    files = list(tmp_path.glob("*/basis.txt"))
+    assert len(files) == 1
+    lines = files[0].read_text(encoding="utf-8").splitlines()
+    assert len(lines) == 2
+    assert lines[0].startswith("Timetable basis: ")
+    assert lines[1] == ("Seating basis: one paper per room, with the mix of "
+                        "room sizes that needs the fewest rooms; 6 rooms hold "
+                        "one paper and 1 holds two (two papers' leftovers "
+                        "joined, or mixed where the rooms ran out).")
+    for line in lines:
+        assert line in out
 
 
 @pytest.mark.parametrize("dataset", ["tiny", "main"])

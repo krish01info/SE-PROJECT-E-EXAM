@@ -470,3 +470,10 @@ def test_no_join_that_would_break_roll_order():
 
 def test_join_leftovers_with_no_rooms_or_plans():
     assert seat.join_leftovers([], []) == []
+
+
+def test_basis_line_when_every_room_holds_one_paper():
+    plans = seat.seat_slot([paper("A", 21), paper("B", 21)], [M_ROOM, M02])
+    assert seat.basis_line({("day", "morning"): plans}) == (
+        "Seating basis: one paper per room, with the mix of room sizes that "
+        "needs the fewest rooms; all 2 rooms hold one paper.")
